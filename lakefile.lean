@@ -12,3 +12,9 @@ abbrev packageLeanOptions :=
 lean_lib VerifiedFilter where
   leanOptions := packageLeanOptions
   moreServerOptions := packageLinters
+
+lean_lib TestSuiteLib where
+
+lean_exe TestSuite
+
+require "base64-lean" from git "https://github.com/Quoteme/base64-lean" @ "main"

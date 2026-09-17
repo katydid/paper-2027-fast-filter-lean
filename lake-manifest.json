@@ -1,5 +1,15 @@
 {"version": "1.1.0",
  "packagesDir": ".lake/packages",
- "packages": [],
+ "packages":
+ [{"url": "https://github.com/Quoteme/base64-lean",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "2ec6fa32f5cc6865fd696e544cd968c55a02b8bb",
+   "name": "«base64-lean»",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "main",
+   "inherited": false,
+   "configFile": "lakefile.toml"}],
  "name": "verifiedFilter",
  "lakeDir": ".lake"}

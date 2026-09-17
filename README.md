@@ -12,3 +12,17 @@ We recommend following the [Readme](./VerifiedFilter/Readme.md) documents, to ge
 
   - [Install Lean4](https://lean-lang.org/install/).
   - Remember to also add `lake` (the build system for lean) to your `PATH`.  You can do this on mac by adding `export PATH=~/.elan/bin/:${PATH}` to your  `~/.zshrc` file
+
+## Run TestSuite
+
+Running the test suite requires checking out the [validator-testsuite](https://git.katydid.org.za/validator-testsuite) and then running
+
+```
+$ lake exe TestSuite <path to test suite>
+```
+
+For example:
+
+```
+$ lake exe TestSuite ../../katydid.org.za/go/validator-testsuite
+```
