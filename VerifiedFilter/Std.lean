@@ -11,4 +11,5 @@ import VerifiedFilter.Std.Memoize
 import VerifiedFilter.Std.List
 import VerifiedFilter.Std.Vector
 import VerifiedFilter.Std.State
+import VerifiedFilter.Std.String
 import VerifiedFilter.Std.TestUtils

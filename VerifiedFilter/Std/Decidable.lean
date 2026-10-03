@@ -1,6 +1,6 @@
 -- A Decidable library that suppliments Lean's standard Decidable definitions.
 
-def decideRel (p : α → β → Prop) [DecidableRel p]: α → β → Bool :=
+def decideRel (p : α → β → Prop) [d: DecidableRel p]: α → β → Bool :=
   fun a b => decide (p a b)
 
 instance {α: Type} {β: α → Type}

@@ -10,6 +10,8 @@ import VerifiedFilter.Parser.Token
 open Lean
 open Lean.Json
 
+namespace TestSuiteLib
+
 def Token.fromPair? (kind: String) (value: String): Except String Token := do
   match kind with
   | "unknown" =>

@@ -8,6 +8,8 @@ import VerifiedFilter.Std.Float
 
 open Lean -- Lean.FromJson
 
+namespace TestSuiteLib.GoGrammar
+
 inductive Typ where
   | unknown
   | single_double
@@ -525,9 +527,9 @@ inductive Pattern where
   | Reference (Reference: Reference)
   | LeafNode (LeafNode: LeafNode)
   | TreeNode (Name: NameExpr) (Colon: Option Keyword) (Pattern: Pattern)
-  | Or (OpenParen: Option Keyword) (LeftPattern: Pattern) (Pipe: Keyword) (RightPattern: Pattern) (OpenParen: Option Keyword)
-  | And (OpenParen: Option Keyword) (LeftPattern: Pattern) (Ampersand: Keyword) (RightPattern: Pattern) (OpenParen: Option Keyword)
-  | Xor (OpenParen: Option Keyword) (LeftPattern: Pattern) (Caret: Keyword) (RightPattern: Pattern) (OpenParen: Option Keyword)
+  | Or (OpenParen: Option Keyword) (LeftPattern: Pattern) (Pipe: Keyword) (RightPattern: Pattern) (CloseParen: Option Keyword)
+  | And (OpenParen: Option Keyword) (LeftPattern: Pattern) (Ampersand: Keyword) (RightPattern: Pattern) (CloseParen: Option Keyword)
+  | Xor (OpenParen: Option Keyword) (LeftPattern: Pattern) (Caret: Keyword) (RightPattern: Pattern) (CloseParen: Option Keyword)
   | Concat (OpenBracket: Option Keyword) (LeftPattern: Pattern) (Comma: Keyword) (RightPattern: Pattern) (ExtraComma: Option Keyword) (CloseBracket: Option Keyword)
   | Interleave (OpenCurly: Option Keyword) (LeftPattern: Pattern) (SemiColon: Keyword) (RightPattern: Pattern) (ExtraSemiColon: Option Keyword) (CloseCurly: Option Keyword)
   | ZeroOrMore (OpenParen: Option Keyword) (Pattern: Pattern) (CloseParen: Option Keyword) (Star: Keyword)

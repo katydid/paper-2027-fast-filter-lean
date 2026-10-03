@@ -1,6 +1,4 @@
 import VerifiedFilter.Std.Bytes
-import Std.Data.HashMap
-import Std
 
 import Base64Lean
 

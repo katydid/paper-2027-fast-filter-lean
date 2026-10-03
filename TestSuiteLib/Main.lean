@@ -4,15 +4,15 @@ import Lean.Data.Json.FromToJson
 import VerifiedFilter.Std.Hedge
 import VerifiedFilter.Parser.Token
 import TestSuiteLib.Hedge
-import TestSuiteLib.Grammar
+import TestSuiteLib.GoGrammar
 
 open Lean
 
-namespace TestSuite
+namespace TestSuiteLib
 
 structure Test where
   name: String
-  grammar: Grammar
+  grammar: GoGrammar.Grammar
   valid: Bool
   input: Hedge Token
 
@@ -24,7 +24,7 @@ def parseHedge (s: String): IO (Hedge Token) := do
   | Except.error err => EIO.throw err
   | Except.ok node => return node
 
-def parseGrammar (s: String): IO Grammar := do
+def parseGrammar (s: String): IO GoGrammar.Grammar := do
   match Lean.Json.parse s with
   | Except.error err => EIO.throw s!"{err}: {s}"
   | Except.ok j =>

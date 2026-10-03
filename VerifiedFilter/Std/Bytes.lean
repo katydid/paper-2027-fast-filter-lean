@@ -20,3 +20,19 @@ def Bytes.fromJson? (j: Json): Except String Bytes :=
 
 instance : FromJson Bytes where
   fromJson? := Bytes.fromJson?
+
+instance : LT Bytes where
+  lt x y := LT.lt x.toList y.toList
+
+@[extern "lean_bytes_dec_lt", implicit_reducible]
+def Bytes.decLt (a b : Bytes) : Decidable (a < b) :=
+  inferInstanceAs (Decidable (a.toList < b.toList))
+
+instance : LE Bytes where
+  le x y := LE.le x.toList y.toList
+
+@[extern "lean_bytes_dec_le", implicit_reducible]
+def Bytes.decLe (a b : Bytes) : Decidable (a ≤ b) :=
+  inferInstanceAs (Decidable (a.toList ≤ b.toList))
+
+attribute [instance] Bytes.decLt Bytes.decLe
