@@ -1,3 +1,3 @@
 import TestSuiteLib.Main
 
-def main := TestSuite.main
+def main := TestSuiteLib.main

@@ -228,6 +228,12 @@ def Terminal.toPredString (t: GoGrammar.Terminal): Except String (TestSuiteLib.P
   match t.TagValue with
   | some b => return TestSuiteLib.Pred.string_const b
   | none =>
+  match t.Variable with
+  | some v =>
+    match Variable.toPredString v with
+    | Except.ok p => Except.ok p
+    | Except.error _err => throw s!"expected variable terminal of type String {repr t}"
+  | none =>
   throw s!"expected terminal of type String {repr t}"
 
 -- inductive Expr where
@@ -598,11 +604,6 @@ partial def Expr.toPredBool (e: GoGrammar.Expr): Except String (TestSuiteLib.Pre
 partial def Expr.toPredBytes (e: GoGrammar.Expr): Except String (TestSuiteLib.Pred Bytes) :=
   match e with
   | GoGrammar.Expr.Terminal _ _ t => Terminal.toPredBytes t
-  | GoGrammar.Expr.BuiltIn _ _ s e => do
-    let name <- builtInToFunctionName s.Value
-    let typ := whichType e
-    let var <- Variable.fromType typ
-    Expr.toPredBytes (GoGrammar.Expr.Function (Name := name) (Params := [var, e]) none none none (GoGrammar.Keyword.mk none "") (GoGrammar.Keyword.mk none ""))
   | GoGrammar.Expr.Function _ _ _ name _ params _ =>
     match name with
     | "elem" => do
@@ -621,11 +622,6 @@ partial def Expr.toPredBytes (e: GoGrammar.Expr): Except String (TestSuiteLib.Pr
 partial def Expr.toPredFloat64Bits (e: GoGrammar.Expr): Except String (TestSuiteLib.Pred Float64Bits) :=
   match e with
   | GoGrammar.Expr.Terminal _ _ t => Terminal.toPredFloat64Bits t
-  | GoGrammar.Expr.BuiltIn _ _ s e => do
-    let name <- builtInToFunctionName s.Value
-    let typ := whichType e
-    let var <- Variable.fromType typ
-    Expr.toPredFloat64Bits (GoGrammar.Expr.Function (Name := name) (Params := [var, e]) none none none (GoGrammar.Keyword.mk none "") (GoGrammar.Keyword.mk none ""))
   | GoGrammar.Expr.Function _ _ _ name _ params _ =>
     match name with
     | "elem" => do
@@ -644,11 +640,6 @@ partial def Expr.toPredFloat64Bits (e: GoGrammar.Expr): Except String (TestSuite
 partial def Expr.toPredInt64 (e: GoGrammar.Expr): Except String (TestSuiteLib.Pred Int64) :=
   match e with
   | GoGrammar.Expr.Terminal _ _ t => Terminal.toPredInt64 t
-  | GoGrammar.Expr.BuiltIn _ _ s e => do
-    let name <- builtInToFunctionName s.Value
-    let typ := whichType e
-    let var <- Variable.fromType typ
-    Expr.toPredInt64 (GoGrammar.Expr.Function (Name := name) (Params := [var, e]) none none none (GoGrammar.Keyword.mk none "") (GoGrammar.Keyword.mk none ""))
   | GoGrammar.Expr.Function _ _ _ name _ params _ =>
     match name with
     | "elem" => do
@@ -671,17 +662,14 @@ partial def Expr.toPredInt64 (e: GoGrammar.Expr): Except String (TestSuiteLib.Pr
       | GoGrammar.Typ.list_int => Pred.length_ints <$> Expr.toPredInt64s p
       | GoGrammar.Typ.list_string => Pred.length_strings <$> Expr.toPredStrings p
       | GoGrammar.Typ.list_uint => Pred.length_uints <$> Expr.toPredUInt64s p
+      | GoGrammar.Typ.single_string => Pred.length_string <$> Expr.toPredString p
+      | GoGrammar.Typ.single_bytes => Pred.length_bytes <$> Expr.toPredBytes p
       | _ => throw s!"unsupported type {repr e}"
     | _ => throw s!"expected int function {repr e}"
   | _ => throw s!"expected expr of type int {repr e}"
 partial def Expr.toPredString (e: GoGrammar.Expr): Except String (TestSuiteLib.Pred String) :=
   match e with
   | GoGrammar.Expr.Terminal _ _ t => Terminal.toPredString t
-  | GoGrammar.Expr.BuiltIn _ _ s e => do
-    let name <- builtInToFunctionName s.Value
-    let typ := whichType e
-    let var <- Variable.fromType typ
-    Expr.toPredString (GoGrammar.Expr.Function (Name := name) (Params := [var, e]) none none none (GoGrammar.Keyword.mk none "") (GoGrammar.Keyword.mk none ""))
   | GoGrammar.Expr.Function _ _ _ name _ params _ =>
     match name with
     | "elem" => do
@@ -706,11 +694,6 @@ partial def Expr.toPredString (e: GoGrammar.Expr): Except String (TestSuiteLib.P
 partial def Expr.toPredUInt64 (e: GoGrammar.Expr): Except String (TestSuiteLib.Pred UInt64) :=
   match e with
   | GoGrammar.Expr.Terminal _ _ t => Terminal.toPredUInt64 t
-  | GoGrammar.Expr.BuiltIn _ _ s e => do
-    let name <- builtInToFunctionName s.Value
-    let typ := whichType e
-    let var <- Variable.fromType typ
-    Expr.toPredUInt64 (GoGrammar.Expr.Function (Name := name) (Params := [var, e]) none none none (GoGrammar.Keyword.mk none "") (GoGrammar.Keyword.mk none ""))
   | GoGrammar.Expr.Function _ _ _ name _ params _ =>
     match name with
     | "elem" => do

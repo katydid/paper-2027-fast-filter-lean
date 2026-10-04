@@ -341,89 +341,89 @@ def Pred.eval (p: Pred α) (x: Token): Except String α :=
   | Pred.ne_string p1 p2 => Bool.not <$> (BEq.beq <$> p1.eval x <*> p2.eval x)
   | Pred.ne_uint p1 p2 => Bool.not <$> (BEq.beq <$> p1.eval x <*> p2.eval x)
 
-  | Pred.le_bytes p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := Bytes.decLe) v1 v2
-  | Pred.le_double p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := UInt64.decLe) v1 v2
-  | Pred.le_int p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := Int64.decLe) v1 v2
-  | Pred.le_string p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := String.decLe) v1 v2
-  | Pred.le_uint p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := UInt64.decLe) v1 v2
+  -- | Pred.le_bytes p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := Bytes.decLe) v1 v2
+  -- | Pred.le_double p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := UInt64.decLe) v1 v2
+  -- | Pred.le_int p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := Int64.decLe) v1 v2
+  -- | Pred.le_string p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := String.decLe) v1 v2
+  -- | Pred.le_uint p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := UInt64.decLe) v1 v2
 
-  | Pred.lt_bytes p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := Bytes.decLt) v1 v2
-  | Pred.lt_double p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := UInt64.decLt) v1 v2
-  | Pred.lt_int p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := Int64.decLt) v1 v2
-  | Pred.lt_string p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := String.decLt) v1 v2
-  | Pred.lt_uint p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return decideRel _ (d := UInt64.decLt) v1 v2
+  -- | Pred.lt_bytes p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := Bytes.decLt) v1 v2
+  -- | Pred.lt_double p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := UInt64.decLt) v1 v2
+  -- | Pred.lt_int p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := Int64.decLt) v1 v2
+  -- | Pred.lt_string p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := String.decLt) v1 v2
+  -- | Pred.lt_uint p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return decideRel _ (d := UInt64.decLt) v1 v2
 
-  | Pred.ge_bytes p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := Bytes.decLt) v1 v2
-  | Pred.ge_double p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := UInt64.decLt) v1 v2
-  | Pred.ge_int p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := Int64.decLt) v1 v2
-  | Pred.ge_string p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := String.decLt) v1 v2
-  | Pred.ge_uint p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := UInt64.decLt) v1 v2
+  -- | Pred.ge_bytes p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := Bytes.decLt) v1 v2
+  -- | Pred.ge_double p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := UInt64.decLt) v1 v2
+  -- | Pred.ge_int p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := Int64.decLt) v1 v2
+  -- | Pred.ge_string p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := String.decLt) v1 v2
+  -- | Pred.ge_uint p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := UInt64.decLt) v1 v2
 
-  | Pred.gt_bytes p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := Bytes.decLe) v1 v2
-  | Pred.gt_double p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := UInt64.decLe) v1 v2
-  | Pred.gt_int p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := Int64.decLe) v1 v2
-  | Pred.gt_string p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := String.decLe) v1 v2
-  | Pred.gt_uint p1 p2 => do
-    let v1 <- p1.eval x
-    let v2 <- p2.eval x
-    return Bool.not <| decideRel _ (d := UInt64.decLe) v1 v2
+  -- | Pred.gt_bytes p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := Bytes.decLe) v1 v2
+  -- | Pred.gt_double p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := UInt64.decLe) v1 v2
+  -- | Pred.gt_int p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := Int64.decLe) v1 v2
+  -- | Pred.gt_string p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := String.decLe) v1 v2
+  -- | Pred.gt_uint p1 p2 => do
+  --   let v1 <- p1.eval x
+  --   let v2 <- p2.eval x
+  --   return Bool.not <| decideRel _ (d := UInt64.decLe) v1 v2
 
   | length_bytess (xs: Pred (List Bytes)) =>
     Nat.toInt64 <$> List.length <$> xs.eval x
@@ -543,6 +543,7 @@ def Pred.eval (p: Pred α) (x: Token): Except String α :=
     let p' <- p.eval x
     let s2' <- s2.eval x
     Regexp.check p' s2'
+  | _ => throw "wtf"
 
 def Pred.evalb (p: Pred Bool) (x: Token): Bool :=
   match Pred.eval p x with
