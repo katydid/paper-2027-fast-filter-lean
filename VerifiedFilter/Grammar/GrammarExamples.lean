@@ -11,6 +11,8 @@ import VerifiedFilter.Grammar.Grammar
 
 namespace Grammar
 
+open VerifiedFilter.Regex
+
 example: Grammar 2 String := Grammar.mk
   (start := Regex.symbol ("title", 0))
   (prods := #v[

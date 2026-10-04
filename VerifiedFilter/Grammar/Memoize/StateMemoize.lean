@@ -19,6 +19,7 @@ import VerifiedFilter.Grammar.Denote
 
 import VerifiedFilter.Grammar.Memoize.Memoize
 
+open VerifiedFilter.Regex
 open Regex.Memoize
 open Hedge
 

@@ -10,6 +10,7 @@ import VerifiedFilter.Pred.Compare
 
 namespace Grammar.JSONmembers
 
+open VerifiedFilter.Regex
 open Pred
 open Hedge
 

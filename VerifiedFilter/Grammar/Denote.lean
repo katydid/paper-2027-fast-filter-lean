@@ -10,6 +10,8 @@ import VerifiedFilter.Grammar.Lang
 
 namespace Grammar
 
+open VerifiedFilter.Regex
+
 theorem decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (xs: Hedge α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)

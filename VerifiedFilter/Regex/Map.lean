@@ -3,6 +3,8 @@
 
 import VerifiedFilter.Regex.Regex
 
+namespace VerifiedFilter.Regex
+
 def Regex.map (r: Regex α) (f: α → β): Regex β := match r with
   | emptyset => emptyset | emptystr => emptystr | star r1 => star (map r1 f)
   | symbol s => symbol (f s) | or r1 r2 => or (map r1 f) (map r2 f)

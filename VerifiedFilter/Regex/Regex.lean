@@ -7,6 +7,8 @@ import VerifiedFilter.Std.Decidable
 
 import VerifiedFilter.Regex.Lang
 
+namespace VerifiedFilter.Regex
+
 -- A symbolic regular expression defined over a generic symbol
 inductive Regex (σ: Type) where
   | emptyset | emptystr | symbol (s: σ) | or (r1 r2: Regex σ)

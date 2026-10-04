@@ -11,6 +11,7 @@ import VerifiedFilter.Grammar.Denote
 import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Grammar.Lang
 
+open VerifiedFilter.Regex
 open Hedge
 
 def Grammar.Katydid.derive (G: Grammar n φ) (Φ: φ → α → Bool)

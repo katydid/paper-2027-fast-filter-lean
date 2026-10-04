@@ -7,7 +7,7 @@
 
 import VerifiedFilter.Std.Vector
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 inductive IfExpr (σ: Type) (l: Nat) where
   | res (bools: Vector Bool l): IfExpr σ l

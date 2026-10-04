@@ -13,7 +13,7 @@ import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Memoize.Enter
 import VerifiedFilter.Regex.Memoize.Leave
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydid (m: Type → Type u) σ [DecidableEq σ] [Hashable σ] where
   enterM : (r: Regex σ) → m { res: Vector σ (symcount r) // res = enter r }

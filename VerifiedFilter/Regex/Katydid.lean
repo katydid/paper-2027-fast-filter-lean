@@ -13,7 +13,7 @@ import VerifiedFilter.Regex.Point
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Replace
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 -- enter returns the symbols that were extracted from the regular expression.
 def enter (r: Regex σ): Vector σ (symcount r) := (extract r).2

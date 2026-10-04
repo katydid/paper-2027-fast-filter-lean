@@ -10,6 +10,7 @@ import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Grammar.Denote
 import VerifiedFilter.Grammar.Grammar
 
+open VerifiedFilter.Regex
 open Hedge
 
 theorem Grammar.JSONmembers.decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):

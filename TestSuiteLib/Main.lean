@@ -4,7 +4,12 @@ import Lean.Data.Json.FromToJson
 import VerifiedFilter.Std.Hedge
 import VerifiedFilter.Parser.Token
 import TestSuiteLib.Hedge
+import TestSuiteLib.Pred
+import TestSuiteLib.Translate
 import TestSuiteLib.GoGrammar
+
+import VerifiedFilter.Grammar.Grammar
+import VerifiedFilter.Grammar.Katydid
 
 open Lean
 
@@ -12,7 +17,7 @@ namespace TestSuiteLib
 
 structure Test where
   name: String
-  grammar: GoGrammar.Grammar
+  grammar: Σ n, Grammar n (TestSuiteLib.Pred Bool)
   valid: Bool
   input: Hedge Token
 
@@ -31,6 +36,17 @@ def parseGrammar (s: String): IO GoGrammar.Grammar := do
   match FromJson.fromJson? j with
   | Except.error err => EIO.throw s!"{err}: {s}"
   | Except.ok g => return g
+
+def translateGrammar (g: GoGrammar.Grammar): IO (Σ n, Grammar n (TestSuiteLib.Pred Bool))  := do
+  match GoGrammartoLeanGrammar g with
+  | Except.error err => EIO.throw s!"{err}"
+  | Except.ok g => return g
+
+def run (t: Test): IO Unit := do
+  let valid := Grammar.Katydid.validate t.grammar.2 TestSuiteLib.Pred.evalb t.input
+  if valid == t.valid
+  then IO.println s!"{t.name}: yeah"
+  else IO.println s!"{t.name}: nah"
 
 def main (args : List String): IO Unit := do
   -- https://lean-lang.org/doc/reference/latest/IO/Files___-File-Handles___-and-Streams/#IO___FS___readFile
@@ -57,9 +73,10 @@ def main (args : List String): IO Unit := do
       | _ =>
         valid := valid
     let input <- parseHedge inputStr
-    let grammar <- parseGrammar grammarStr
-    tests := tests ++ [Test.mk (name := name) (grammar := grammar) (valid := valid) (input := input)]
+    let gogrammar <- parseGrammar grammarStr
+    let leangrammar <- translateGrammar gogrammar
+    tests := tests ++ [Test.mk (name := name) (grammar := leangrammar) (valid := valid) (input := input)]
   let testList := tests.toList.mergeSort (fun x y => compare x.name y.name == Ordering.eq || Ord.compare x.name y.name == Ordering.lt)
-  for test in testList do
-    IO.println test.name
   IO.println tests.size
+  for test in testList do
+    run test

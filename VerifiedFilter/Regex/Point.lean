@@ -5,6 +5,8 @@
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Map
 
+namespace VerifiedFilter.Regex
+
 -- first returns a regular expression, where all symbols contain a tuple have been replaced with a symbol containing the first element of the tuple.
 def Regex.Point.first (r: Regex (α × β)): Regex α := r.map (fun (s,_) => s)
 

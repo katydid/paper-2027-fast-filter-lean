@@ -15,7 +15,7 @@ import VerifiedFilter.Regex.Memoize.Enter
 import VerifiedFilter.Regex.Memoize.Leave
 import VerifiedFilter.Regex.Memoize.Memoize
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev StateMemoize σ [DecidableEq σ] [Hashable σ] := StateT (enterMemTable σ) (StateM (leaveMemTable σ))
 abbrev memoizeState σ [DecidableEq σ] [Hashable σ] := (enterMemTable σ × leaveMemTable σ)

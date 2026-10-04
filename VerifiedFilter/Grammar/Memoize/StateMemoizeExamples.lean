@@ -10,6 +10,7 @@ import VerifiedFilter.Grammar.Memoize.StateMemoize
 import VerifiedFilter.Pred.AnyEq
 import VerifiedFilter.Pred.Compare
 
+open VerifiedFilter.Regex
 open Hedge
 open Regex.Memoize
 open Pred

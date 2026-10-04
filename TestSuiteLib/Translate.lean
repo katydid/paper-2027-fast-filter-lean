@@ -1,4 +1,5 @@
 import Mathlib.Tactic.RewriteSearch
+import Mathlib.Tactic
 import Aesop
 
 import TestSuiteLib.GoGrammar
@@ -9,9 +10,12 @@ import Std.Data.HashMap
 
 namespace TestSuiteLib
 
+open VerifiedFilter.Regex
+
 abbrev Rule := Regex (TestSuiteLib.Pred Bool × Nat)
 
-def maxRef (r: Rule): Nat :=
+@[grind]
+def maxRef (r: Regex (φ × Nat)): Nat :=
   match r with
   | Regex.emptyset => 0
   | Regex.emptystr => 0
@@ -1027,11 +1031,46 @@ def TreeNodes.toRule (g: GoGrammarMap) (p: GoGrammar.Pattern) (refn: Nat) (res: 
 --   After: Option Space
 --   deriving FromJson, Repr
 
+
+@[grind]
+def maxRefs (xs: List (Regex (φ × Nat))): Nat :=
+  match h: xs with
+  | [] => 0
+  | x'::xs' => List.max (List.map maxRef xs) (by
+      subst h
+      simp_all only [List.map_cons, ne_eq, reduceCtorEq, not_false_eq_true]
+    )
+
+
+
+def toFin (x: (Regex (φ × Nat))) (h: n >= maxRef x): Regex (φ × Fin (n + 1)) :=
+  match x with
+  | Regex.emptyset => Regex.emptyset
+  | Regex.emptystr => Regex.emptystr
+  | Regex.star r1 => Regex.star (toFin r1 h)
+  | Regex.symbol (p, n') => Regex.symbol (p, Fin.mk n' (by
+      simp only [maxRef] at h
+      omega
+    ))
+  | Regex.or r1 r2 => Regex.or
+    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r2 (by simp only [maxRef] at h; omega))
+  | Regex.concat r1 r2 => Regex.concat
+    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r1 (by simp only [maxRef] at h; omega))
+  | Regex.interleave r1 r2 => Regex.interleave
+    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r1 (by simp only [maxRef] at h; omega))
+  | Regex.and r1 r2 => Regex.and
+    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r1 (by simp only [maxRef] at h; omega))
+  | Regex.compliment r1 => Regex.compliment (toFin r1 h)
+  | Regex.xor r1 r2 => Regex.xor
+    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r1 (by simp only [maxRef] at h; omega))
+
 theorem max_cons
-  [Max α]
-  [Std.Associative (α := α) Max.max]
-  [Std.IdempotentOp (α := α) Max.max]
-  {x : α} {xs : List α} {h: x :: xs ≠ []} :
+  {x : Nat} {xs : List Nat} {h: x :: xs ≠ []} :
   (x :: xs).max h = max x ((x :: xs).max h) := by
   induction xs with
   | nil =>
@@ -1040,30 +1079,150 @@ theorem max_cons
   | cons x' xs ih =>
     simp only [List.max]
     rw [@List.foldl_cons]
-    sorry
+    rw [List.foldl_max]
+    simp only [right_eq_sup]
+    omega
 
-def GoGrammar_toRule (g: GoGrammar.Grammar): Except String (Σ n, (Grammar n (TestSuiteLib.Pred Bool))) := do
+theorem max_max {x: Nat} {xs: List Nat}:
+  max x (xs.max?.getD x) = (x::xs).max (by simp) := by
+  simp [List.max]
+  rw [List.foldl_max]
+
+theorem max_cons1
+  {x : Nat} {xs : List Nat} {h: x :: xs ≠ []} :
+  (x :: xs).max h = max x (xs.max?.getD 0) := by
+  cases xs with
+  | nil =>
+    simp
+  | cons x' xs =>
+    simp only [List.max]
+    rw [@List.foldl_cons]
+    rw [List.foldl_max]
+    nth_rewrite 2 [List.max?.eq_def]
+    nth_rewrite 2 [Option.getD.eq_def]
+    simp only
+    rw [max_max]
+    simp only [List.max]
+    rw [@List.foldl_max]
+    rw [@List.foldl_max]
+    induction xs with
+    | nil =>
+      simp
+    | cons y ys ih =>
+      simp only [List.max?_cons, Option.getD_some, Nat.max_assoc]
+
+theorem max_cons2
+  {x1 x2 : Nat} {xs : List Nat} {h: x1 :: x2 :: xs ≠ []} :
+  (x1 :: x2 :: xs).max h = max x1 ((x2 :: xs).max (by simp)) := by
+  simp only [List.max]
+  simp only [List.foldl]
+  rw [List.foldl_max]
+  rw [List.foldl_max]
+  simp_all only [ne_eq, reduceCtorEq, not_false_eq_true, Nat.max_assoc]
+  rw [<- Nat.max_assoc]
+  rw [<- Nat.max_assoc]
+  induction xs with
+  | nil =>
+    simp
+  | cons x xs ih =>
+    simp
+
+theorem max1 (h : n >= maxRefs (x :: xs')): n >= maxRef x := by
+  induction xs' with
+  | nil =>
+    simp [maxRefs, List.max] at h
+    omega
+  | cons y ys ih =>
+    simp [maxRefs, List.max] at h
+    rw [← List.foldl_cons] at h
+    rw [List.foldl_max] at h
+    omega
+
+theorem maxs (h : n >= maxRefs (x :: xs')): n >= maxRefs xs' := by
+  induction hxs: xs' with
+  | nil =>
+    simp [maxRefs, List.max] at h
+    simp [maxRefs]
+  | cons y ys ih =>
+    simp [maxRefs] at h
+    rw [hxs] at h
+    simp only [List.map] at h
+    rw [max_cons2] at h
+    simp only [maxRefs]
+    simp only [List.map]
+    omega
+
+def listToFin (xs: List (Regex (φ × Nat))) (h: n >= maxRefs xs): List (Regex (φ × Fin (n + 1))) :=
+  match xs with
+  | [] => []
+  | (x::xs') =>
+    toFin x (by
+      apply max1
+      omega
+    ) :: listToFin xs' (by
+      apply maxs
+      omega
+    )
+
+def listToVector (xs: List (Regex (φ × Fin n))): Vector (Regex (φ × Fin n)) n := Id.run do
+  let mut v: Vector (Regex (φ × Fin n)) n := Vector.mk (Array.replicate n Regex.emptyset) (by
+    simp only [Array.size_replicate]
+  )
+  let finList := List.finRange n
+  let zipList := List.zip finList xs
+  for item in zipList do
+    v := v.set! item.1.toNat item.2
+  v
+
+def GoGrammartoLeanGrammar (g: GoGrammar.Grammar): Except String (Σ n, (Grammar n (TestSuiteLib.Pred Bool))) := do
   let gmap: GoGrammarMap := GoGrammar.mk g
+
   let startRule: Rule <- GoPattern.toRule gmap g.TopPattern 1
-  let mut rules: List Rule := []
-  -- emptystr should be in position zero
-  rules := Regex.emptystr :: rules
-  rules <- TreeNodes.toRule gmap g.TopPattern 1 rules
+
   let decls := match g.PatternDecls with
     | none => []
     | some decls => decls
+  let mut prodRules: List Rule := []
+  -- emptystr should be in position zero
+  prodRules := Regex.emptystr :: prodRules
+  prodRules <- TreeNodes.toRule gmap g.TopPattern 1 prodRules
   let mut nref := treecount g.TopPattern 1
   for decl in decls do
-    rules <- TreeNodes.toRule gmap decl.Pattern nref rules
+    prodRules <- TreeNodes.toRule gmap decl.Pattern nref prodRules
     nref := treecount decl.Pattern nref
-  let prodsList := rules.reverse
-  let n: Nat := 1 + List.foldl max (maxRef startRule) (List.map maxRef prodsList)
-  let start: Regex (TestSuiteLib.Pred Bool × Ref n) := Rule.toFin startRule n (by
+  let prodRulesList := prodRules.reverse
+
+  let n: Nat := 1 + List.foldl max (maxRef startRule) (List.map maxRef prodRulesList)
+  let start: Regex (TestSuiteLib.Pred Bool × Ref (n + 1)) := Rule.toFin startRule (n + 1) (by
       subst n
       rw [List.foldl_max]
       omega
     )
-  return Sigma.mk n <|
+
+  let prodFins := listToFin (n := n) prodRulesList (by
+    subst n
+    induction prodRulesList with
+    | nil =>
+      simp [maxRefs]
+    | cons p ps ih =>
+      simp [maxRefs]
+      rw [max_cons1]
+      rw [<- List.foldl]
+      rw [<- List.max]
+      rw [max_cons1]
+      nth_rewrite 2 [List.max?.eq_def]
+      simp only
+      nth_rewrite 2 [Option.getD.eq_def]
+      simp only
+      rw [<- List.max]
+      rw [max_cons1]
+      omega
+      simp
+      simp
+  )
+  let prods := listToVector prodFins
+
+  return Sigma.mk (n + 1) <|
     Grammar.mk
     (start := start)
-    (prods := sorry)
+    (prods := prods)

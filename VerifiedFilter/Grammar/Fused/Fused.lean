@@ -16,6 +16,7 @@ import VerifiedFilter.Regex.Memoize.Memoizes
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.SymCounts
 
+open VerifiedFilter.Regex
 open Regex.Memoize (MemoizeKatydids)
 
 class FusedKatydid (m: Type → Type u) (σ: Type) (α: Type)

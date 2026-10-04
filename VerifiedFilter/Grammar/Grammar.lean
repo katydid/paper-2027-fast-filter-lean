@@ -2,6 +2,8 @@
 
 import VerifiedFilter.Regex.Regex
 
+open VerifiedFilter.Regex
+
 -- ## Definition 3.2.3: Regular Hedge Grammar
 --   𝐺 = (𝑁, 𝑇, 𝑆, 𝑃)
 --   𝑁 a finite set of non-terminals

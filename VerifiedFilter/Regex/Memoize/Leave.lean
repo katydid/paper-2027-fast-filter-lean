@@ -8,7 +8,7 @@ import VerifiedFilter.Std.Memoize.Memoize
 import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Regex
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev leaveParam (σ: Type) := Σ (r: Regex σ), (Vector Bool (symcount r))
 abbrev leaveResult {σ: Type} (_: leaveParam σ) := Regex σ

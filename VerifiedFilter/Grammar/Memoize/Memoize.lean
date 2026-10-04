@@ -15,6 +15,7 @@ import VerifiedFilter.Grammar.Lang
 import VerifiedFilter.Grammar.Denote
 
 import VerifiedFilter.Regex.Memoize
+open VerifiedFilter.Regex
 open Regex.Memoize
 open Hedge
 

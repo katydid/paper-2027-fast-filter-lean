@@ -6,6 +6,8 @@ import VerifiedFilter.Regex.Point
 import VerifiedFilter.Regex.Extracts
 import VerifiedFilter.Regex.Replaces
 
+namespace VerifiedFilter.Regex
+
 def Regex.Point.derives (rs: Vector (Regex (σ × Bool)) l): Vector (Regex σ) l :=
   Vector.map (xs := rs) Regex.Point.derive
 

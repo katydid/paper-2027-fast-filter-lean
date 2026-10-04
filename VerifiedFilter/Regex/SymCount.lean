@@ -2,7 +2,7 @@
 
 import VerifiedFilter.Regex.Regex
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 @[reducible, simp]
 def symcount (r: Regex σ): Nat :=

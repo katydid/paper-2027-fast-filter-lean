@@ -6,7 +6,7 @@ import VerifiedFilter.Regex.SymCounts
 import VerifiedFilter.Regex.Extract
 import VerifiedFilter.Std.Vector
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 def extractsAcc (rs: Vector (Regex σ) l) (acc: Vector σ lacc):
   (Vector (Regex (Fin (lacc + symcounts rs))) l) × (Vector σ (lacc + symcounts rs)) :=

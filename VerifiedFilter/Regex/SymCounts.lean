@@ -4,7 +4,7 @@
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.SymCount
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 def symcounts (rs: Vector (Regex σ) l): Nat :=
   Vector.foldl (· + ·) 0 (Vector.map Regex.symcount rs)

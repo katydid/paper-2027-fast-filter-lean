@@ -6,6 +6,7 @@ import VerifiedFilter.Std.Float
 
 import VerifiedFilter.Parser.Token
 
+import TestSuiteLib.Regexp
 import Mathlib.Tactic.RewriteSearch
 import Aesop
 
@@ -541,7 +542,9 @@ def Pred.eval (p: Pred α) (x: Token): Except String α :=
   | regex (p: Pred String) (s2: Pred String) => do
     let p' <- p.eval x
     let s2' <- s2.eval x
-    throw "regex not supported"
+    Regexp.check p' s2'
 
-def Pred.evalb (p: Pred Bool) (x: Token): Except String Bool :=
-  Pred.eval p x
+def Pred.evalb (p: Pred Bool) (x: Token): Bool :=
+  match Pred.eval p x with
+  | Except.error _ => false
+  | Except.ok k => k

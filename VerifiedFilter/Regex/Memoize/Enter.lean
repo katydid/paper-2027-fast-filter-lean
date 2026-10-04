@@ -6,7 +6,7 @@ import VerifiedFilter.Std.Memoize.Memoize
 import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Regex
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev enterParam (σ: Type) := Regex σ
 abbrev enterMemTable (σ: Type) [DecidableEq σ] [Hashable σ] := MemTable enter (α := enterParam σ)

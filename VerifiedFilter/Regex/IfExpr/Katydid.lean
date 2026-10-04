@@ -12,7 +12,7 @@ import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.IfExpr.Enter
 import VerifiedFilter.Regex.IfExpr.IfExpr
 
-namespace Regex.IfExpr
+namespace VerifiedFilter.Regex.Regex.IfExpr
 
 def Regex.IfExpr.derive (Φ: σ → Bool) (r: Regex σ): Regex σ :=
   enter r |> IfExpr.eval Φ |> leave r

@@ -5,7 +5,7 @@ import VerifiedFilter.Std.Memoize.Memoize
 
 import VerifiedFilter.Regex.Regex
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Memoize
 
 def Regex.derive2 (Φ: σ → α → Bool) (ra: Regex σ × α): Regex σ :=
   Regex.derive Φ ra.1 ra.2

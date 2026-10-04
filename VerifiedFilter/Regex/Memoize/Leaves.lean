@@ -10,7 +10,7 @@ import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Extracts
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev leavesParam (σ: Type) := Σ (l: Nat), Σ (rs: Vector (Regex σ) l), (Vector Bool (symcounts rs))
 abbrev leavesResult (rs: leavesParam σ) :=

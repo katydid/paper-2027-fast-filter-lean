@@ -10,7 +10,7 @@ import VerifiedFilter.Regex.IfExpr.IfExpr
 import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Regex
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 def IfExpr.enter (r: Regex σ): IfExpr σ (symcount r) := IfExpr.mk (extract r).2
 

@@ -7,7 +7,7 @@ import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.RegexID
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 -- replaceLE is a helper function for defining the replace function.
 def replaceLE (r: RegexID n) (xs: Vector σ l) (h: n <= l): Regex σ :=

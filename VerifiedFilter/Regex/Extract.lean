@@ -7,7 +7,7 @@ import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.RegexID
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 private theorem lt_add_symbol:
   n < n + symcount (symbol s) := by

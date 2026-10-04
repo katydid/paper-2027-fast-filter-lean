@@ -11,7 +11,7 @@ import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Memoize.Enters
 import VerifiedFilter.Regex.Memoize.Leaves
 
-namespace Regex.Memoize
+namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydids (m: Type → Type u) σ [DecidableEq σ] [Hashable σ] where
   entersM : (rs: Σ (l: Nat), Vector (Regex σ) l) → m { res: Vector σ (symcounts rs.2) // res = Regex.enters rs.2 }

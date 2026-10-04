@@ -4,7 +4,7 @@ import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Map
 import VerifiedFilter.Regex.SymCount
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 abbrev RegexID n := Regex (Fin n)
 

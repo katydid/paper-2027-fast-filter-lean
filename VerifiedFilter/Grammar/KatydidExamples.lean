@@ -9,6 +9,7 @@ import VerifiedFilter.Pred.AnyEq
 import VerifiedFilter.Pred.Compare
 
 open Hedge
+open VerifiedFilter.Regex
 
 namespace Grammar.Katydid
 

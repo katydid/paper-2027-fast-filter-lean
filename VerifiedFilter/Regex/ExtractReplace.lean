@@ -10,7 +10,7 @@
 import VerifiedFilter.Regex.Extract
 import VerifiedFilter.Regex.Replace
 
-namespace Regex
+namespace VerifiedFilter.Regex.Regex
 
 theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
   r = replace (extractAcc r acc).1 (extractAcc r acc).2 := by

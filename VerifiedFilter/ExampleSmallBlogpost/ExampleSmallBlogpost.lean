@@ -13,6 +13,7 @@ import VerifiedFilter.Grammar.Katydid
 
 namespace VerifiedFilter.JSONSchema
 
+open VerifiedFilter.Regex
 open Regex
 open Pred.JSONSchema
 

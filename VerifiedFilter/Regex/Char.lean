@@ -4,6 +4,8 @@
 
 import VerifiedFilter.Regex.Regex
 
+namespace VerifiedFilter.Regex
+
 def Regex.Char.derive (r: Regex Char) (a: Char): Regex Char :=
   match r with
   | emptyset => emptyset | emptystr => emptyset
