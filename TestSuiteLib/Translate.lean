@@ -389,8 +389,9 @@ def Terminals.toStrings (es: List GoGrammar.Expr): Except String (List String) :
     match e with
     | GoGrammar.Expr.Terminal _ _ t =>
       match t.StringValue with
-      | some v =>
-        (v :: ·) <$> Terminals.toStrings es'
+      | some v => do
+        let vs <- Terminals.toStrings es'
+        return (v :: vs)
       | none =>
         throw "not all strings"
     | _ =>
@@ -1094,10 +1095,8 @@ def listToVector (xs: List (Regex (φ × Fin n))): Vector (Regex (φ × Fin n)) 
 
 
 def RefGrammar.mk (g: GoGrammar.Grammar): Σ n, RefGrammarMap n × Vector (RefPattern n) n := Id.run do
-  -- reserve 0 for the emptystr regex
-  let reservedRefPatterns := #v[RefPattern.Empty]
   -- create RefPattern for main
-  let ⟨n, _hn, topRefPattern, topRefPatterns⟩ := mkRefPattern g.TopPattern reservedRefPatterns
+  let ⟨n, _hn, topRefPattern, topRefPatterns⟩ := mkRefPattern g.TopPattern #v[]
   let mut res: Σ n, RefGrammarMap n × Vector (RefPattern n) n := ⟨n, Std.HashMap.emptyWithCapacity.insert "main" topRefPattern, topRefPatterns⟩
 
   let decls := g.PatternDecls.getD []

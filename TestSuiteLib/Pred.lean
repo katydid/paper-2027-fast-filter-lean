@@ -301,7 +301,10 @@ def Pred.eval (p: Pred α) (x: Token): Except String α :=
     | _ => throw "token is not a string var"
   | Pred.uint_var =>
     match x with
-    | Token.int64 v => return v.toUInt64
+    | Token.int64 v =>
+      if v < 0
+      then throw "token is not a uint var, it is a negative number"
+      else return v.toUInt64
     | Token.decimal s => Float.toUInt64 <$> Float.fromString? s
     | _ => throw "token is not a uint var"
   | Pred.tag_var =>

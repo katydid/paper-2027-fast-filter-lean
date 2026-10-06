@@ -350,7 +350,7 @@ partial def Expr.fromJson? (j: Json): Except String Expr :=
         (FromJson.fromJson? =<< get? innerKvPairs "Type") <*>
         (keyword innerKvPairs "OpenCurly") <*>
         (
-          match get? innerKvPairs "Params" with
+          match get? innerKvPairs "Elems" with
           | Except.error _ => return []
           | Except.ok jparams =>
           match jparams with
@@ -611,7 +611,7 @@ partial def Pattern.fromJson? (j: Json): Except String Pattern :=
         (keyword jkvpair "Dot") <*>
         (Pattern.fromJson? =<< get? jkvpair "Pattern")
     | [("Optional", Json.obj jkvpair)] =>
-      Pattern.ZeroOrMore <$>
+      Pattern.Optional <$>
         (keyword? jkvpair "OpenParen") <*>
         (Pattern.fromJson? =<< get? jkvpair "Pattern") <*>
         (keyword jkvpair "CloseParen") <*>
