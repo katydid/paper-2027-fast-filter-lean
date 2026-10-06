@@ -31,25 +31,31 @@ def List.range {α: Type u} (xs: List α) (a b: Nat): Except String (List α) :=
     | [] => throw "a out of range"
     | (_::xs') => List.range xs' a' b
 
-def OurList.le [LE α] [DecidableLE α] (xs ys: List α): Bool :=
+def OurList.le [LE α] [DecidableEq α] [DecidableLE α] (xs ys: List α): Bool :=
   match xs, ys with
   | [], [] => true
   | (_x::_), [] => false
   | [], (_y::_) => true
   | (x::xs), (y::ys) =>
-    if x <= y
-    then true
-    else OurList.le xs ys
+    if x == y
+    then OurList.le xs ys
+    else
+      if x <= y
+      then true
+      else false
 
-def OurList.lt [LT α] [DecidableLT α] (xs ys: List α): Bool :=
+def OurList.lt [LT α] [DecidableEq α] [DecidableLT α] (xs ys: List α): Bool :=
   match xs, ys with
   | [], [] => true
   | (_x::_), [] => false
   | [], (_y::_) => true
   | (x::xs), (y::ys) =>
-    if x < y
-    then true
-    else OurList.lt xs ys
+    if x == y
+    then OurList.lt xs ys
+    else
+      if x < y
+      then true
+      else false
 
 set_option deriving.decEq.linear_construction_threshold 1
 set_option deriving.ord.linear_construction_threshold 1
@@ -90,7 +96,7 @@ inductive Pred : (α: Type) -> Type where
   -- func contains(string,const []string) bool
   -- func contains(string,string) bool
   -- func contains(uint,const []uint) bool
-  | contains_string (sub: Pred String) (haystack: Pred String): Pred Bool
+  | contains_string (haystack: Pred String) (sub: Pred String): Pred Bool
   | contains_strings (s: Pred String) (ss: Pred (List String)): Pred Bool
   | contains_ints (s: Pred Int64) (ss: Pred (List Int64)): Pred Bool
   | contains_uints (s: Pred UInt64) (ss: Pred (List UInt64)): Pred Bool
@@ -317,7 +323,7 @@ def Pred.eval (p: Pred α) (x: Token): Except String α :=
   | Pred.not p1 => Bool.not <$> p1.eval x
   | Pred.xor p1 p2 => Bool.xor <$> p1.eval x <*> p2.eval x
 
-  | Pred.contains_string sub haystack => do
+  | Pred.contains_string haystack sub => do
     let h <- haystack.eval x
     let s <- sub.eval x
     return String.contains h s
@@ -571,3 +577,15 @@ def Pred.evalb (p: Pred Bool) (x: Token): Bool :=
   match Pred.eval p x with
   | Except.error _ => false
   | Except.ok k => k
+
+#guard Pred.evalb (Pred.ge_string (Pred.string_var) (Pred.string_const "10")) (Token.string "11")
+  = true
+
+#guard Pred.evalb (Pred.ge_string (Pred.string_var) (Pred.string_const "11")) (Token.string "10")
+  = false
+
+#guard Pred.evalb (Pred.hasSuffix Pred.string_var (Pred.string_const "omen")) (Token.string "Abdomen")
+  = true
+
+#guard Pred.evalb (Pred.contains_string Pred.string_var (Pred.string_const "art")) (Token.string "Dart")
+  = true
