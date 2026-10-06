@@ -60,7 +60,6 @@ def main (args : List String): IO Unit := do
     if name == "HiddenLeftRecursionRobert" || name == "LeftRecursionRobert" || name == "LeftRecursionDavid" || name == "HiddenLeftRecursionDavid"
     then continue
     else
-      IO.println name
       let mut inputStr := ""
       let mut grammarStr := ""
       let mut valid := false
@@ -82,5 +81,16 @@ def main (args : List String): IO Unit := do
       tests := tests ++ [Test.mk (name := name) (grammar := leangrammar) (valid := valid) (input := input)]
   let testList := tests.toList.mergeSort (fun x y => compare x.name y.name == Ordering.eq || Ord.compare x.name y.name == Ordering.lt)
   IO.println tests.size
+  let mut pass := 0
+  let mut fail := 0
   for test in testList do
-    run test
+    let valid := Grammar.Katydid.validate test.grammar.2 TestSuiteLib.Pred.evalb test.input
+    if valid == test.valid
+    then
+      pass := pass + 1
+      -- IO.println s!"{test.name}: yeah"
+    else
+      fail := fail + 1
+      IO.println s!"{test.name}: nah"
+      IO.println (repr test.grammar.2)
+  IO.println s!"Pass: {pass}, Fail: {fail}"

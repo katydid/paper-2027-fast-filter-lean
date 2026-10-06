@@ -12,9 +12,6 @@ namespace TestSuiteLib
 
 open VerifiedFilter.Regex
 
-abbrev Rule := Regex (TestSuiteLib.Pred Bool × Nat)
-
-@[grind]
 def maxRef (r: Regex (φ × Nat)): Nat :=
   match r with
   | Regex.emptyset => 0
@@ -28,74 +25,113 @@ def maxRef (r: Regex (φ × Nat)): Nat :=
   | Regex.compliment r1 => maxRef r1
   | Regex.xor r1 r2 => max (maxRef r1) (maxRef r2)
 
-def Rule.toFin (r: Rule) (n: Nat) (h: n > maxRef r): Regex (TestSuiteLib.Pred Bool × Ref n) :=
-  match hr: r with
-  | Regex.emptyset => Regex.emptyset
-  | Regex.emptystr => Regex.emptystr
-  | Regex.star r1 => Regex.star <| Rule.toFin r1 n h
-  | Regex.symbol (s1, s2) => Regex.symbol
-    (s1, Fin.mk s2 (by
-      simp only [maxRef] at h
-      exact h
-    ))
-  | Regex.or r1 r2 => Regex.or
-    (Rule.toFin r1 n (by simp only [maxRef] at h; omega))
-    (Rule.toFin r2 n (by simp only [maxRef] at h; omega))
-  | Regex.concat r1 r2 => Regex.concat
-    (Rule.toFin r1 n (by simp only [maxRef] at h; omega))
-    (Rule.toFin r2 n (by simp only [maxRef] at h; omega))
-  | Regex.interleave r1 r2 => Regex.interleave
-    (Rule.toFin r1 n (by simp only [maxRef] at h; omega))
-    (Rule.toFin r2 n (by simp only [maxRef] at h; omega))
-  | Regex.and r1 r2 => Regex.and
-    (Rule.toFin r1 n (by simp only [maxRef] at h; omega))
-    (Rule.toFin r2 n (by simp only [maxRef] at h; omega))
-  | Regex.compliment r1 => Regex.compliment <| Rule.toFin r1 n h
-  | Regex.xor r1 r2 => Regex.xor
-    (Rule.toFin r1 n (by simp only [maxRef] at h; omega))
-    (Rule.toFin r2 n (by simp only [maxRef] at h; omega))
+inductive RefPattern (n: Nat) where
+  | Empty
+  | ZAny
+  | Reference (name: String)
+  | LeafNode (expr: GoGrammar.Expr) (ref: Fin n)
+  | TreeNode (name: GoGrammar.NameExpr) (ref: Fin n)
+  | Or (p1: RefPattern n) (p2: RefPattern n)
+  | And (p1: RefPattern n) (p2: RefPattern n)
+  | Xor (p1: RefPattern n) (p2: RefPattern n)
+  | Concat (p1: RefPattern n) (p2: RefPattern n)
+  | Interleave (p1: RefPattern n) (p2: RefPattern n)
+  | ZeroOrMore (p: RefPattern n)
+  | Not (p: RefPattern n)
+  | Contains (p: RefPattern n)
+  | Optional (p: RefPattern n)
+  deriving Repr, BEq
 
-abbrev GoGrammarMap := Std.HashMap String (GoGrammar.Pattern × Nat)
+abbrev RefGrammarMap n := Std.HashMap String (RefPattern n)
 
-def treecount (p: GoGrammar.Pattern) (n: Nat): Nat :=
+def RefPattern.castUp (r: RefPattern n) (m: Nat) (h: n <= m): RefPattern m :=
+  match r with
+  | Empty =>
+    Empty
+  | ZAny =>
+    ZAny
+  | Reference (name: String) =>
+    Reference name
+  | LeafNode (expr: GoGrammar.Expr) (ref: Fin n) =>
+    LeafNode expr (Fin.mk ref.1 (by omega))
+  | TreeNode (name: GoGrammar.NameExpr) (ref: Fin n) =>
+    TreeNode name (Fin.mk ref.1 (by omega))
+  | Or (p1: RefPattern n) (p2: RefPattern n) =>
+    Or (p1.castUp m h) (p2.castUp m h)
+  | And (p1: RefPattern n) (p2: RefPattern n) =>
+    And (p1.castUp m h) (p2.castUp m h)
+  | Xor (p1: RefPattern n) (p2: RefPattern n) =>
+    Xor (p1.castUp m h) (p2.castUp m h)
+  | Concat (p1: RefPattern n) (p2: RefPattern n) =>
+    Concat (p1.castUp m h) (p2.castUp m h)
+  | Interleave (p1: RefPattern n) (p2: RefPattern n) =>
+    Interleave (p1.castUp m h) (p2.castUp m h)
+  | ZeroOrMore (p: RefPattern n) =>
+    ZeroOrMore (p.castUp m h)
+  | Not (p: RefPattern n) =>
+    Not (p.castUp m h)
+  | Contains (p: RefPattern n) =>
+    Contains (p.castUp m h)
+  | Optional (p: RefPattern n) =>
+    Optional (p.castUp m h)
+
+def mkRefPattern (p: GoGrammar.Pattern) (xs: Vector (RefPattern n) n): (Σ' n', n <= n' ×' RefPattern n' × Vector (RefPattern n') n') :=
   match p with
-  | GoGrammar.Pattern.Empty (_Empty: GoGrammar.EmptyNode) => n
-  | GoGrammar.Pattern.ZAny (_ZAny: GoGrammar.ZAny) => n
-  | GoGrammar.Pattern.Reference (_Reference: GoGrammar.Reference) => n
-  | GoGrammar.Pattern.LeafNode (_LeafNode: GoGrammar.LeafNode) => n
-  | GoGrammar.Pattern.TreeNode (_Name: GoGrammar.NameExpr) (_Colon: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) =>
-    treecount Pattern n + 1
-  | GoGrammar.Pattern.Or (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Pipe: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) =>
-    treecount LeftPattern (treecount RightPattern n)
-  | GoGrammar.Pattern.And (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Ampersand: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) =>
-    treecount LeftPattern (treecount RightPattern n)
-  | GoGrammar.Pattern.Xor (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Caret: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) =>
-    treecount LeftPattern (treecount RightPattern n)
-  | GoGrammar.Pattern.Concat (_OpenBracket: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Comma: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraComma: Option GoGrammar.Keyword) (_CloseBracket: Option GoGrammar.Keyword) =>
-    treecount LeftPattern (treecount RightPattern n)
-  | GoGrammar.Pattern.Interleave (_OpenCurly: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_SemiColon: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraSemiColon: Option GoGrammar.Keyword) (_CloseCurly: Option GoGrammar.Keyword) =>
-    treecount LeftPattern (treecount RightPattern n)
-  | GoGrammar.Pattern.ZeroOrMore (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_Star: GoGrammar.Keyword) =>
-    treecount Pattern n
-  | GoGrammar.Pattern.Not (_Exclamation: GoGrammar.Keyword) (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) =>
-    treecount Pattern n
-  | GoGrammar.Pattern.Contains (_Dot: GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) =>
-    treecount Pattern n
-  | GoGrammar.Pattern.Optional (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_QuestionMark: GoGrammar.Keyword) =>
-    treecount Pattern n
-
-def GoGrammar.mk (g: GoGrammar.Grammar): Id GoGrammarMap := do
-  let mut h: GoGrammarMap := Std.HashMap.emptyWithCapacity
-  -- reserve 0 for the emptystr regex
-  h := h.insert "main" (g.TopPattern, 1)
-  match g.PatternDecls with
-  | none => return h
-  | some decls =>
-  let mut n := treecount g.TopPattern 1
-  for decl in decls do
-    h := h.insert decl.Name (decl.Pattern, n)
-    n := treecount decl.Pattern n
-  h
+  | GoGrammar.Pattern.Empty (Empty: GoGrammar.EmptyNode) =>
+    ⟨n, by omega, RefPattern.Empty, xs⟩
+  | GoGrammar.Pattern.ZAny (ZAny: GoGrammar.ZAny) =>
+    ⟨n, by omega, RefPattern.ZAny, xs⟩
+  | GoGrammar.Pattern.Reference (Reference: GoGrammar.Reference) =>
+    ⟨n, by omega, RefPattern.Reference Reference.Name, xs⟩
+  | GoGrammar.Pattern.LeafNode (LeafNode: GoGrammar.LeafNode) =>
+    match xs.finIdxOf? RefPattern.Empty with
+    | Option.none =>
+      -- insert an empty pattern if non exists yet.
+      let xs' := Vector.map (xs := xs) (fun x => x.castUp (n+1) (by omega))
+      ⟨n+1, by simp_all, RefPattern.LeafNode LeafNode.Expr (Fin.mk n (by simp_all)), xs'.push RefPattern.Empty⟩
+    | Option.some idx =>
+      ⟨n, by omega, RefPattern.LeafNode LeafNode.Expr idx, xs⟩
+  | GoGrammar.Pattern.TreeNode (Name: GoGrammar.NameExpr) (Colon: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern)  =>
+    let ⟨cn, ch, cp, cxs⟩ := mkRefPattern Pattern xs
+    let cxs' := Vector.map (xs := cxs) (fun x => x.castUp (cn+1) (by omega))
+    ⟨cn+1, by omega, RefPattern.TreeNode Name (Fin.mk cn (by simp)), cxs'.push (cp.castUp (cn+1) (by simp))⟩
+  | GoGrammar.Pattern.Or (OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (Pipe: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern LeftPattern xs
+    let ⟨n2, h2, p2, xs2⟩ := mkRefPattern RightPattern xs1
+    let p11 := p1.castUp n2 (by omega)
+    ⟨n2, by omega, RefPattern.Or p11 p2, xs2⟩
+  | GoGrammar.Pattern.And (OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (Ampersand: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern LeftPattern xs
+    let ⟨n2, h2, p2, xs2⟩ := mkRefPattern RightPattern xs1
+    let p11 := p1.castUp n2 (by omega)
+    ⟨n2, by omega, RefPattern.And p11 p2, xs2⟩
+  | GoGrammar.Pattern.Xor (OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (Caret: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern LeftPattern xs
+    let ⟨n2, h2, p2, xs2⟩ := mkRefPattern RightPattern xs1
+    let p11 := p1.castUp n2 (by omega)
+    ⟨n2, by omega, RefPattern.Xor p11 p2, xs2⟩
+  | GoGrammar.Pattern.Concat (OpenBracket: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (Comma: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (ExtraComma: Option GoGrammar.Keyword) (CloseBracket: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern LeftPattern xs
+    let ⟨n2, h2, p2, xs2⟩ := mkRefPattern RightPattern xs1
+    let p11 := p1.castUp n2 (by omega)
+    ⟨n2, by omega, RefPattern.Concat p11 p2, xs2⟩
+  | GoGrammar.Pattern.Interleave (OpenCurly: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (SemiColon: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (ExtraSemiColon: Option GoGrammar.Keyword) (CloseCurly: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern LeftPattern xs
+    let ⟨n2, h2, p2, xs2⟩ := mkRefPattern RightPattern xs1
+    let p11 := p1.castUp n2 (by omega)
+    ⟨n2, by omega, RefPattern.Interleave p11 p2, xs2⟩
+  | GoGrammar.Pattern.ZeroOrMore (OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) (Star: GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern Pattern xs
+    ⟨n1, by omega, RefPattern.ZeroOrMore p1, xs1⟩
+  | GoGrammar.Pattern.Not (Exclamation: GoGrammar.Keyword) (OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern Pattern xs
+    ⟨n1, by omega, RefPattern.Not p1, xs1⟩
+  | GoGrammar.Pattern.Contains (Dot: GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern Pattern xs
+    ⟨n1, by omega, RefPattern.Contains p1, xs1⟩
+  | GoGrammar.Pattern.Optional (OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (CloseParen: Option GoGrammar.Keyword) (QuestionMark: GoGrammar.Keyword) =>
+    let ⟨n1, h1, p1, xs1⟩ := mkRefPattern Pattern xs
+    ⟨n1, by omega, RefPattern.Optional p1, xs1⟩
 
 def AnyName.toPred (_: GoGrammar.AnyName): Except String (TestSuiteLib.Pred Bool) :=
   return TestSuiteLib.Pred.any
@@ -560,31 +596,7 @@ partial def Expr.toPredBool (e: GoGrammar.Expr): Except String (TestSuiteLib.Pre
       let p <- List.get? params 0
       match Expr.whichType p with
       | GoGrammar.Typ.single_bool => Pred.print_bool <$> Expr.toPredBool p
-      -- | GoGrammar.Typ.list_bool => Pred.print_bools =<< Expr.toPredBools p
-      -- | GoGrammar.Typ.list_bytes => Pred.print_bytess =<< Expr.toPredBytess p
-      -- | GoGrammar.Typ.list_double => Pred.print_doubles =<< Expr.toPredFloat64Bitss p
-      -- | GoGrammar.Typ.list_int => Pred.print_ints =<< Expr.toPredInt64s p
-      -- | GoGrammar.Typ.list_string => Pred.print_strings =<< Expr.toPredStrings p
-      -- | GoGrammar.Typ.list_uint => Pred.print_uints =<< Expr.toPredUInt64s p
       | _ => throw s!"unsupported type {repr e}"
-  -- func range([][]byte,int,int) [][]byte
-  -- func range([]bool,int,int) []bool
-  -- func range([]double,int,int) []double
-  -- func range([]int,int,int) []int
-  -- func range([]string,int,int) []string
-  -- func range([]uint,int,int) []uint
-    -- | "range" => do
-    --   let ps <- List.get? params 0
-    --   let a <- List.get? params 1
-    --   let b <- List.get? params 2
-    --   match Expr.whichType ps with
-    --   | GoGrammar.Typ.list_bool => Pred.range_bools <$> Expr.toPredBools ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | GoGrammar.Typ.list_bytes => Pred.range_bytes <$> Expr.toPredBytess ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | GoGrammar.Typ.list_double => Pred.range_doubles <$> Expr.toPredFloat64Bitss ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | GoGrammar.Typ.list_int => Pred.range_ints <$> Expr.toPredInt64s ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | GoGrammar.Typ.list_string => Pred.range_strings <$> Expr.toPredStrings ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | GoGrammar.Typ.list_uint => Pred.range_uints <$> Expr.toPredUInt64s ps <*> Expr.toPredInt64 a <*> Expr.toPredInt64 b
-    --   | _ => throw s!"range unsupported type {repr e}"
     | "type" => do
       let p <- List.get? params 0
       match Expr.whichType p with
@@ -861,16 +873,6 @@ partial def Expr.toPredUInt64s (e: GoGrammar.Expr): Except String (TestSuiteLib.
   | _ => throw s!"expected expr of type uints {repr e}"
 end
 
-def EmptyNode.toRule (_: GoGrammar.EmptyNode): Except String Rule :=
-  return Regex.emptystr
-
-def ZAny.toRule (_: GoGrammar.ZAny): Except String Rule :=
-  return Regex.compliment (Regex.emptyset)
-
--- The assumption is that Ref 0 is always the emptystr regex.
-def LeafNode.toRule (l: GoGrammar.LeafNode): Except String Rule :=
-  Regex.symbol <$> (·,0) <$> Expr.toPredBool l.Expr
-
 -- structure Reference where
 --   At: Keyword
 --   Name: String
@@ -892,113 +894,50 @@ def LeafNode.toRule (l: GoGrammar.LeafNode): Except String Rule :=
 --   | Optional (OpenParen: Option Keyword) (Pattern: Pattern) (CloseParen: Option Keyword) (QuestionMark: Keyword)
 --   deriving Repr
 
-partial def GoPattern.toRule (g: GoGrammarMap) (p: GoGrammar.Pattern) (refn: Nat): Except String Rule :=
+partial def RefPattern.toRule (g: RefGrammarMap n) (p: RefPattern n): Except String (Regex (TestSuiteLib.Pred Bool × Fin n)) :=
   match p with
-  | GoGrammar.Pattern.Empty (p: GoGrammar.EmptyNode) =>
-    EmptyNode.toRule p
-  | GoGrammar.Pattern.ZAny (p: GoGrammar.ZAny) =>
-    ZAny.toRule p
-  | GoGrammar.Pattern.Reference (r: GoGrammar.Reference) =>
-    match g.get? r.Name with
-    | none => throw s!"unknown reference {r.Name}"
-    | some rp => GoPattern.toRule g rp.1 rp.2
-  | GoGrammar.Pattern.LeafNode (p: GoGrammar.LeafNode) =>
-    LeafNode.toRule p
-  | GoGrammar.Pattern.TreeNode (nam: GoGrammar.NameExpr) (_Colon: Option GoGrammar.Keyword) (_p: GoGrammar.Pattern) => do
-    return Regex.symbol (<- NameExpr.toPred nam, refn)
-  | GoGrammar.Pattern.Or (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Pipe: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let rightn := treecount LeftPattern refn
-    let left <- GoPattern.toRule g LeftPattern leftn
-    let right <- GoPattern.toRule g RightPattern rightn
+  | Empty => return Regex.emptystr
+  | ZAny => return Regex.compliment (Regex.emptyset)
+  | Reference (name: String) =>
+    match g.get? name with
+    | none => throw s!"unknown reference {name}"
+    | some rp => RefPattern.toRule g rp
+  | LeafNode (e: GoGrammar.Expr) (refn: Fin n) =>
+    Regex.symbol <$> (·,refn) <$> Expr.toPredBool e
+  | TreeNode (name: GoGrammar.NameExpr) (refn: Fin n) => do
+    return Regex.symbol (<- NameExpr.toPred name, refn)
+  | Or (p1: RefPattern n) (p2: RefPattern n) => do
+    let left <- RefPattern.toRule g p1
+    let right <- RefPattern.toRule g p2
     return Regex.or left right
-  | GoGrammar.Pattern.And (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Ampersand: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let rightn := treecount LeftPattern refn
-    let left <- GoPattern.toRule g LeftPattern leftn
-    let right <- GoPattern.toRule g RightPattern rightn
+  | And (p1: RefPattern n) (p2: RefPattern n) => do
+    let left <- RefPattern.toRule g p1
+    let right <- RefPattern.toRule g p2
     return Regex.and left right
-  | GoGrammar.Pattern.Xor (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Caret: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let rightn := treecount LeftPattern refn
-    let left <- GoPattern.toRule g LeftPattern leftn
-    let right <- GoPattern.toRule g RightPattern rightn
+  | Xor (p1: RefPattern n) (p2: RefPattern n) => do
+    let left <- RefPattern.toRule g p1
+    let right <- RefPattern.toRule g p2
     return Regex.xor left right
-  | GoGrammar.Pattern.Concat (_OpenBracket: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Comma: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraComma: Option GoGrammar.Keyword) (_CloseBracket: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let rightn := treecount LeftPattern refn
-    let left <- GoPattern.toRule g LeftPattern leftn
-    let right <- GoPattern.toRule g RightPattern rightn
+  | Concat (p1: RefPattern n) (p2: RefPattern n) => do
+    let left <- RefPattern.toRule g p1
+    let right <- RefPattern.toRule g p2
     return Regex.concat left right
-  | GoGrammar.Pattern.Interleave (_OpenCurly: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_SemiColon: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraSemiColon: Option GoGrammar.Keyword) (_CloseCurly: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let rightn := treecount LeftPattern refn
-    let left <- GoPattern.toRule g LeftPattern leftn
-    let right <- GoPattern.toRule g RightPattern rightn
+  | Interleave (p1: RefPattern n) (p2: RefPattern n) => do
+    let left <- RefPattern.toRule g p1
+    let right <- RefPattern.toRule g p2
     return Regex.interleave left right
-  | GoGrammar.Pattern.ZeroOrMore (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_Star: GoGrammar.Keyword) => do
-    let res <- GoPattern.toRule g Pattern refn
+  | ZeroOrMore (p1: RefPattern n) => do
+    let res <- RefPattern.toRule g p1
     return Regex.star res
-  | GoGrammar.Pattern.Not (_Exclamation: GoGrammar.Keyword) (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let res <- GoPattern.toRule g Pattern refn
+  | Not (p1: RefPattern n) => do
+    let res <- RefPattern.toRule g p1
     return Regex.compliment res
-  | GoGrammar.Pattern.Contains (_Dot: GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) => do
-    let res <- GoPattern.toRule g Pattern refn
+  | Contains (p1: RefPattern n) => do
+    let res <- RefPattern.toRule g p1
     return Regex.concat Regex.starAny (Regex.concat res Regex.starAny)
-  | GoGrammar.Pattern.Optional (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_QuestionMark: GoGrammar.Keyword) => do
-    let res <- GoPattern.toRule g Pattern refn
+  | Optional (p1: RefPattern n) => do
+    let res <- RefPattern.toRule g p1
     return Regex.or res Regex.emptystr
-
-def TreeNodes.toRule (g: GoGrammarMap) (p: GoGrammar.Pattern) (refn: Nat) (res: List Rule): Except String (List Rule) :=
-  match p with
-  | GoGrammar.Pattern.Empty (_Empty: GoGrammar.EmptyNode) =>
-    return res
-  | GoGrammar.Pattern.ZAny (_ZAny: GoGrammar.ZAny) =>
-    return res
-  | GoGrammar.Pattern.Reference (_Reference: GoGrammar.Reference) =>
-    return res
-  | GoGrammar.Pattern.LeafNode (_LeafNode: GoGrammar.LeafNode) =>
-    return res
-  | GoGrammar.Pattern.TreeNode (_Name: GoGrammar.NameExpr) (_Colon: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) => do
-    return (<- GoPattern.toRule g Pattern refn) :: res
-  | GoGrammar.Pattern.Or (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Pipe: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let leftres := res
-    let rightn := treecount LeftPattern refn
-    let rightres <- TreeNodes.toRule g LeftPattern leftn leftres
-    TreeNodes.toRule g RightPattern rightn rightres
-  | GoGrammar.Pattern.And (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Ampersand: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let leftres := res
-    let rightn := treecount LeftPattern refn
-    let rightres <- TreeNodes.toRule g LeftPattern leftn leftres
-    TreeNodes.toRule g RightPattern rightn rightres
-  | GoGrammar.Pattern.Xor (_OpenParen: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Caret: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let leftres := res
-    let rightn := treecount LeftPattern refn
-    let rightres <- TreeNodes.toRule g LeftPattern leftn leftres
-    TreeNodes.toRule g RightPattern rightn rightres
-  | GoGrammar.Pattern.Concat (_OpenBracket: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_Comma: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraComma: Option GoGrammar.Keyword) (_CloseBracket: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let leftres := res
-    let rightn := treecount LeftPattern refn
-    let rightres <- TreeNodes.toRule g LeftPattern leftn leftres
-    TreeNodes.toRule g RightPattern rightn rightres
-  | GoGrammar.Pattern.Interleave (_OpenCurly: Option GoGrammar.Keyword) (LeftPattern: GoGrammar.Pattern) (_SemiColon: GoGrammar.Keyword) (RightPattern: GoGrammar.Pattern) (_ExtraSemiColon: Option GoGrammar.Keyword) (_CloseCurly: Option GoGrammar.Keyword) => do
-    let leftn := refn
-    let leftres := res
-    let rightn := treecount LeftPattern refn
-    let rightres <- TreeNodes.toRule g LeftPattern leftn leftres
-    TreeNodes.toRule g RightPattern rightn rightres
-  | GoGrammar.Pattern.ZeroOrMore (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_Star: GoGrammar.Keyword) =>
-    TreeNodes.toRule g Pattern refn res
-  | GoGrammar.Pattern.Not (_Exclamation: GoGrammar.Keyword) (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) =>
-    TreeNodes.toRule g Pattern refn res
-  | GoGrammar.Pattern.Contains (_Dot: GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) =>
-    TreeNodes.toRule g Pattern refn res
-  | GoGrammar.Pattern.Optional (_OpenParen: Option GoGrammar.Keyword) (Pattern: GoGrammar.Pattern) (_CloseParen: Option GoGrammar.Keyword) (_QuestionMark: GoGrammar.Keyword) =>
-    TreeNodes.toRule g Pattern refn res
 
 -- structure PatternDecl where
 --   Hash: Keyword
@@ -1014,8 +953,6 @@ def TreeNodes.toRule (g: GoGrammarMap) (p: GoGrammar.Pattern) (refn: Nat) (res: 
 --   After: Option Space
 --   deriving FromJson, Repr
 
-
-@[grind]
 def maxRefs (xs: List (Regex (φ × Nat))): Nat :=
   match h: xs with
   | [] => 0
@@ -1023,8 +960,6 @@ def maxRefs (xs: List (Regex (φ × Nat))): Nat :=
       subst h
       simp_all only [List.map_cons, ne_eq, reduceCtorEq, not_false_eq_true]
     )
-
-
 
 def toFin (x: (Regex (φ × Nat))) (h: n >= maxRef x): Regex (φ × Fin (n + 1)) :=
   match x with
@@ -1040,17 +975,17 @@ def toFin (x: (Regex (φ × Nat))) (h: n >= maxRef x): Regex (φ × Fin (n + 1))
     (toFin r2 (by simp only [maxRef] at h; omega))
   | Regex.concat r1 r2 => Regex.concat
     (toFin r1 (by simp only [maxRef] at h; omega))
-    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r2 (by simp only [maxRef] at h; omega))
   | Regex.interleave r1 r2 => Regex.interleave
     (toFin r1 (by simp only [maxRef] at h; omega))
-    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r2 (by simp only [maxRef] at h; omega))
   | Regex.and r1 r2 => Regex.and
     (toFin r1 (by simp only [maxRef] at h; omega))
-    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r2 (by simp only [maxRef] at h; omega))
   | Regex.compliment r1 => Regex.compliment (toFin r1 h)
   | Regex.xor r1 r2 => Regex.xor
     (toFin r1 (by simp only [maxRef] at h; omega))
-    (toFin r1 (by simp only [maxRef] at h; omega))
+    (toFin r2 (by simp only [maxRef] at h; omega))
 
 theorem max_cons
   {x : Nat} {xs : List Nat} {h: x :: xs ≠ []} :
@@ -1157,55 +1092,39 @@ def listToVector (xs: List (Regex (φ × Fin n))): Vector (Regex (φ × Fin n)) 
     v := v.set! item.1.toNat item.2
   v
 
-def GoGrammartoLeanGrammar (g: GoGrammar.Grammar): Except String (Σ n, (Grammar n (TestSuiteLib.Pred Bool))) := do
-  let gmap: GoGrammarMap := GoGrammar.mk g
 
-  let startRule: Rule <- GoPattern.toRule gmap g.TopPattern 1
+def RefGrammar.mk (g: GoGrammar.Grammar): Σ n, RefGrammarMap n × Vector (RefPattern n) n := Id.run do
+  -- reserve 0 for the emptystr regex
+  let reservedRefPatterns := #v[RefPattern.Empty]
+  -- create RefPattern for main
+  let ⟨n, _hn, topRefPattern, topRefPatterns⟩ := mkRefPattern g.TopPattern reservedRefPatterns
+  let mut res: Σ n, RefGrammarMap n × Vector (RefPattern n) n := ⟨n, Std.HashMap.emptyWithCapacity.insert "main" topRefPattern, topRefPatterns⟩
 
-  let decls := match g.PatternDecls with
-    | none => []
-    | some decls => decls
-  let mut prodRules: List Rule := []
-  -- emptystr should be in position zero
-  prodRules := Regex.emptystr :: prodRules
-  prodRules <- TreeNodes.toRule gmap g.TopPattern 1 prodRules
-  let mut nref := treecount g.TopPattern 1
+  let decls := g.PatternDecls.getD []
   for decl in decls do
-    prodRules <- TreeNodes.toRule gmap decl.Pattern nref prodRules
-    nref := treecount decl.Pattern nref
-  let prodRulesList := prodRules.reverse
+    match res with
+    | ⟨_n, refMap, refPatterns'⟩ =>
+      let ⟨n', hn', refPattern, newRefPatterns⟩ := mkRefPattern decl.Pattern refPatterns'
+      let mut newRefMap: RefGrammarMap n' := Std.HashMap.emptyWithCapacity.insert decl.Name refPattern
+      for ⟨key, value⟩ in refMap do
+        newRefMap := newRefMap.insert key (value.castUp n' hn')
+      res := ⟨n', newRefMap, newRefPatterns⟩
 
-  let n: Nat := 1 + List.foldl max (maxRef startRule) (List.map maxRef prodRulesList)
-  let start: Regex (TestSuiteLib.Pred Bool × Ref (n + 1)) := Rule.toFin startRule (n + 1) (by
-      subst n
-      rw [List.foldl_max]
-      omega
-    )
+  res
 
-  let prodFins := listToFin (n := n) prodRulesList (by
-    subst n
-    induction prodRulesList with
-    | nil =>
-      simp [maxRefs]
-    | cons p ps ih =>
-      simp [maxRefs]
-      rw [max_cons1]
-      rw [<- List.foldl]
-      rw [<- List.max]
-      rw [max_cons1]
-      nth_rewrite 2 [List.max?.eq_def]
-      simp only
-      nth_rewrite 2 [Option.getD.eq_def]
-      simp only
-      rw [<- List.max]
-      rw [max_cons1]
-      omega
-      simp
-      simp
-  )
-  let prods := listToVector prodFins
+abbrev Rule n := Regex (TestSuiteLib.Pred Bool × Fin n)
 
-  return Sigma.mk (n + 1) <|
+def GoGrammartoLeanGrammar (g: GoGrammar.Grammar): Except String (Σ n, (Grammar n (TestSuiteLib.Pred Bool))) := do
+  let ⟨n, refMap, refPatterns⟩ : Σ n, RefGrammarMap n × Vector (RefPattern n) n := RefGrammar.mk g
+
+  match refMap.get? "main" with
+  | Option.none => throw "no main pattern"
+  | Option.some startRefPattern =>
+  let start: Rule n <- RefPattern.toRule refMap startRefPattern
+
+  let prods : Vector (Regex (TestSuiteLib.Pred Bool × Ref n)) n <- refPatterns.mapM (RefPattern.toRule refMap)
+
+  return Sigma.mk n <|
     Grammar.mk
     (start := start)
     (prods := prods)

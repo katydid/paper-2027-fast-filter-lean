@@ -329,7 +329,7 @@ inductive Expr where
   | List (RightArrow: Option Keyword) (Comma: Option Keyword) (Before: Option Space) (Typ: Typ) (OpenCurly: Keyword) (Params: List Expr) (CloseCurly: Keyword)
   | Function (RightArrow: Option Keyword) (Comma: Option Keyword) (Before: Option Space) (Name: String) (OpenParen: Keyword) (Params: List Expr) (CloseParen: Keyword)
   | BuiltIn (RightArrow: Option Keyword) (Comma: Option Keyword) (Symbol: Keyword) (Expr: Expr)
-  deriving Repr
+  deriving Repr, BEq
 -- Not deriving DecidableEq, because nested inductive types are not supported https://github.com/leanprover/lean4/issues/2329
 
 partial def Expr.fromJson? (j: Json): Except String Expr :=

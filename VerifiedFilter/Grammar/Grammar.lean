@@ -18,6 +18,7 @@ abbrev Ref (n: Nat) := Fin n
 structure Grammar (n: Nat) (φ: Type) where
   start: Regex (φ × Ref n)
   prods: Vector (Regex (φ × Ref n)) n
+  deriving Repr
 
 namespace Grammar
 
