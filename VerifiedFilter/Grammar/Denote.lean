@@ -394,7 +394,7 @@ theorem denote_xor {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bo
   funext
   simp only [Rule.denote, Lang.xor]
 
-theorem null_commutes (G: Grammar n φ) (Φ: φ -> α -> Bool) r:
+theorem null_commutes (G: Grammar n φ) (Φ: φ → α → Bool) r:
   ((Regex.null r) = true) = Lang.null (Rule.denote G Φ r) := by
   induction r with
   | emptyset =>

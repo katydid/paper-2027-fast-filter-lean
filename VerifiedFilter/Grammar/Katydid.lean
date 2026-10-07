@@ -194,10 +194,8 @@ namespace Grammar.Katydid
 -- undoing the partial application of the node, permuting the parameters,
 -- and applying theorem Regex.Katydid.derive_is_Regex_derive.
 -- The symbol case needs extra work.
-theorem derive_commutes (G: Grammar n φ) Φ
-  (r: Regex (φ × Ref n)) (node: Node α):
-  Rule.denote G Φ (derive G Φ r node)
-  = Lang.derive (Rule.denote G Φ r) node := by
+theorem derive_commutes G Φ (r: Regex (φ × Ref n)) (n: Node α):
+  Rule.denote G Φ (derive G Φ r n) = Lang.derive (Rule.denote G Φ r) n := by
   induction r with
   | emptyset =>
     rw [Grammar.Katydid.derive_emptyset]
@@ -210,7 +208,7 @@ theorem derive_commutes (G: Grammar n φ) Φ
     rw [Lang.derive_emptystr]
   | symbol s =>
     obtain ⟨pred, ref⟩ := s
-    obtain ⟨label, children⟩ := node
+    obtain ⟨label, children⟩ := n
 
     rw [Grammar.Katydid.derive_symbol]
 
@@ -297,7 +295,7 @@ theorem derive_commutes (G: Grammar n φ) Φ
     rw [Lang.derive_xor]
     rw [ih1]
     rw [ih2]
-  termination_by node
+  termination_by n
   decreasing_by
     apply Node.sizeOf_children hx
 

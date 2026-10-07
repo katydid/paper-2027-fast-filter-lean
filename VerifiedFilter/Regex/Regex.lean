@@ -11,16 +11,17 @@ namespace VerifiedFilter.Regex
 
 -- A symbolic regular expression defined over a generic symbol
 inductive Regex (σ: Type) where
-  | emptyset | emptystr | symbol (s: σ) | or (r1 r2: Regex σ)
-  | concat (r1 r2: Regex σ) | star (r1: Regex σ) | interleave (r1 r2: Regex σ)
+  | emptyset | emptystr | symbol (s: σ) | interleave (r1 r2: Regex σ)
+  | or (r1 r2: Regex σ) | concat (r1 r2: Regex σ) | star (r1: Regex σ)
   | and (r1 r2: Regex σ) | compliment (r1: Regex σ) | xor (r1 r2: Regex σ)
   deriving DecidableEq, Ord, Repr, Hashable
 
 -- null defines whether a regular expression matches the empty string.
 def Regex.null: (r: Regex σ) → Bool
   | emptyset => false | emptystr => true | symbol _ => false
-  | or r1 r2 => (null r1 || null r2) | concat r1 r2 => (null r1 && null r2)
-  | star _ => true | interleave r1 r2 => (null r1 && null r2)
+  | or r1 r2 => (null r1 || null r2) | star _ => true
+  | concat r1 r2 => (null r1 && null r2)
+  | interleave r1 r2 => (null r1 && null r2)
   | and r1 r2 => (null r1 && null r2) | compliment r1 => ! (null r1)
   | xor r1 r2 => ((null r1) || (null r2)) && (!(null r1 && null r2))
 
@@ -110,7 +111,7 @@ def Regex.derive (Φ: σ → α → Bool) (r: Regex σ) (a: α): Regex σ :=
   = Regex.or Regex.emptystr Regex.emptyset
 
 -- validate returns whether a regular expression matches a string.
-def Regex.validate (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): Bool :=
+def Regex.validate (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):Bool :=
   null (List.foldl (derive Φ) r xs)
 
 namespace Regex
