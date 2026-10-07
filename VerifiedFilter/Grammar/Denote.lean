@@ -200,7 +200,7 @@ theorem decreasing_xor_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (xs
 
 -- Lang.or, Lang.concat and Lang.star are unfolded to help with the termination proof.
 -- Φ needs to be the last parameter, so that simp only works on this function when the parameter r is provided.
-def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
+def Rule.denote (G: Grammar n φ) (Φ: φ → α → Bool)
   (r: Regex (φ × Ref n)) (h: Hedge α): Prop := match r with
   | Regex.emptyset => False
   | Regex.emptystr => h = []
@@ -239,13 +239,13 @@ def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
     · apply decreasing_xor_l
     · apply decreasing_xor_r
 
-theorem denote_emptyset {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop):
+theorem denote_emptyset {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool):
   Rule.denote G Φ Regex.emptyset = Lang.emptyset := by
   funext xs
   simp only [Rule.denote]
   rfl
 
-theorem denote_emptystr {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop):
+theorem denote_emptystr {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool):
   Rule.denote G Φ Regex.emptystr = Lang.emptystr := by
   funext xs
   simp only [Rule.denote]
@@ -253,7 +253,7 @@ theorem denote_emptystr {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α �
 
 theorem denote_onlyif {α: Type}
   (condition: Prop) [dcond: Decidable condition]
-  (G: Grammar n φ) {Φ: φ → α → Prop} (x: Regex (φ × Ref n)):
+  (G: Grammar n φ) {Φ: φ → α → Bool} (x: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.onlyif condition x) = Lang.onlyif condition (Rule.denote G Φ x) := by
   unfold Lang.onlyif
   unfold Regex.onlyif
@@ -270,7 +270,7 @@ theorem denote_onlyif {α: Type}
     intro h'
     contradiction
 
-theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (s: (φ × Ref n)):
+theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (s: (φ × Ref n)):
   Rule.denote G Φ (Regex.symbol s) = Lang.node (fun a => Φ s.1 a) (Rule.denote G Φ (G.lookup s.2)) := by
   unfold Lang.node
   funext xs
@@ -278,14 +278,14 @@ theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α →
   cases xs with
   | nil =>
     rw [Rule.denote]
-    simp only [List.ne_cons_self, decide_eq_true_eq, false_and, exists_const, exists_false]
+    simp only [List.ne_cons_self, false_and, exists_const, exists_false]
     intro x h
     contradiction
   | cons x xs =>
     cases xs with
     | nil =>
       rw [Rule.denote]
-      simp only [List.cons.injEq, and_true, decide_eq_true_eq]
+      simp only [List.cons.injEq, and_true]
       cases x with
       | node label children =>
       obtain ⟨labelPred, ref⟩ := s
@@ -312,26 +312,26 @@ theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α →
       intro x h
       simp at h
 
-theorem denote_or {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1 r2: Regex (φ × Ref n)):
+theorem denote_or {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1 r2: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.or r1 r2) = Lang.or (Rule.denote G Φ r1) (Rule.denote G Φ r2) := by
   funext
   simp only [Rule.denote, Lang.or]
 
-theorem denote_concat {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (p q: Regex (φ × Ref n)):
+theorem denote_concat {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (p q: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.concat p q) = Lang.concat (Rule.denote G Φ p) (Rule.denote G Φ q) := by
   funext
   simp only [Rule.denote]
   unfold Lang.concat
   rfl
 
-theorem denote_interleave {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1 r2: Regex (φ × Ref n)):
+theorem denote_interleave {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1 r2: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.interleave r1 r2) = Lang.interleave (Rule.denote G Φ r1) (Rule.denote G Φ r2) := by
   funext
   simp only [Rule.denote]
   unfold Lang.interleave
   rfl
 
-theorem unfold_denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)) (xs: Hedge α):
+theorem unfold_denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)) (xs: Hedge α):
   Rule.denote G (fun p x' => Φ p x') (Regex.star r) xs
   = (match xs with
     | [] => True
@@ -349,7 +349,7 @@ theorem unfold_denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → �
     | nil =>
       simp only [Rule.denote]
 
-theorem denote_star_iff' {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)) (xs: Hedge α):
+theorem denote_star_iff' {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)) (xs: Hedge α):
   Rule.denote G (fun p x' => Φ p x') (Regex.star r) xs ↔ Lang.star (Rule.denote G (fun p x' => Φ p x') r) xs := by
   rw [← eq_iff_iff]
   unfold Lang.star
@@ -370,31 +370,31 @@ theorem denote_star_iff' {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α 
     obtain ⟨n, hn⟩ := n
     apply List.length_drop_lt_cons
 
-theorem denote_star_iff {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)) (xs: Hedge α):
+theorem denote_star_iff {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)) (xs: Hedge α):
   Rule.denote G Φ (Regex.star r) xs ↔ Lang.star (Rule.denote G Φ r) xs := by
   rw [denote_star_iff']
 
-theorem denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)):
+theorem denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.star r) = Lang.star (Rule.denote G Φ r) := by
   funext
   rw [denote_star_iff]
 
-theorem denote_and {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1 r2: Regex (φ × Ref n)):
+theorem denote_and {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1 r2: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.and r1 r2) = Lang.and (Rule.denote G Φ r1) (Rule.denote G Φ r2) := by
   funext
   simp only [Rule.denote, Lang.and]
 
-theorem denote_compliment {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1: Regex (φ × Ref n)):
+theorem denote_compliment {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.compliment r1) = Lang.compliment (Rule.denote G Φ r1) := by
   funext
   simp only [Rule.denote, Lang.compliment]
 
-theorem denote_xor {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1 r2: Regex (φ × Ref n)):
+theorem denote_xor {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1 r2: Regex (φ × Ref n)):
   Rule.denote G Φ (Regex.xor r1 r2) = Lang.xor (Rule.denote G Φ r1) (Rule.denote G Φ r2) := by
   funext
   simp only [Rule.denote, Lang.xor]
 
-theorem null_commutes (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] r:
+theorem null_commutes (G: Grammar n φ) (Φ: φ -> α -> Bool) r:
   ((Regex.null r) = true) = Lang.null (Rule.denote G Φ r) := by
   induction r with
   | emptyset =>
@@ -465,7 +465,7 @@ theorem null_commutes (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ]
     unfold Regex.null
     grind
 
-theorem denote_nil_is_null (Φ: φ → α → Prop) [DecidableRel Φ]:
+theorem denote_nil_is_null (Φ: φ → α → Bool):
   Rule.denote G Φ r [] = Regex.null r := by
   rw [null_commutes G (fun s a => Φ s a)]
   cases r with
@@ -494,5 +494,5 @@ theorem denote_nil_is_null (Φ: φ → α → Prop) [DecidableRel Φ]:
 end Grammar
 
 -- We specify the semantics of a Grammar as the denotation of the start rule.
-def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Prop) (h: Hedge α): Prop :=
+def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Bool) (h: Hedge α): Prop :=
   Rule.denote G Φ G.start h

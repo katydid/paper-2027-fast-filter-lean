@@ -21,7 +21,7 @@ def Lang.emptyset: Lang α := fun _ => False
 
 def Lang.emptystr: Lang α := fun xs => xs = []
 
-def Lang.symbol (Φ: σ → α → Prop) (s: σ): Lang α :=
+def Lang.symbol (Φ: σ → α → Bool) (s: σ): Lang α :=
   fun xs => ∃ x, xs = [x] ∧ Φ s x
 
 def Lang.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond ∧ P xs
@@ -455,15 +455,15 @@ theorem null_emptystr {α: Type}:
   @null α emptystr = True := by
   rw [null_iff_emptystr]
 
-theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
+theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ → α → Bool} {s: σ}:
   null (symbol Φ s) ↔ False :=
   Iff.intro nofun nofun
 
-theorem not_null_if_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
+theorem not_null_if_symbol {σ: Type} {α: Type} {Φ: σ → α → Bool} {s: σ}:
   null (symbol Φ s) → False :=
   nofun
 
-theorem null_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
+theorem null_symbol {σ: Type} {α: Type} {Φ: σ → α → Bool} {s: σ}:
   null (symbol Φ s) = False := by
   rw [null_iff_symbol]
 
@@ -545,7 +545,7 @@ theorem derive_emptystr {α: Type} {a: α}:
   funext
   rw [derive_iff_emptystr]
 
-theorem derive_iff_symbol {α: Type} {Φ: σ → α → Prop} {x: α} {xs: List α}:
+theorem derive_iff_symbol {α: Type} {Φ: σ → α → Bool} {x: α} {xs: List α}:
   (derive (symbol Φ s) x) xs ↔ (onlyif (Φ s x) emptystr) xs := by
   rw [derive_is_derive']
   simp only [derive', derives, List.singleton_append]
@@ -567,7 +567,7 @@ theorem derive_iff_symbol {α: Type} {Φ: σ → α → Prop} {x: α} {xs: List 
     simp only [List.cons.injEq, true_and]
     exact And.intro hxs hpx
 
-theorem derive_symbol {α: Type} {Φ: σ → α → Prop} {x: α}:
+theorem derive_symbol {α: Type} {Φ: σ → α → Bool} {x: α}:
   (derive (symbol Φ s) x) = (onlyif (Φ s x) emptystr) := by
   funext
   rw [derive_iff_symbol]

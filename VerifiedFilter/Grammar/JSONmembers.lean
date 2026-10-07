@@ -197,9 +197,9 @@ end Grammar.JSONmembers
 
 -- The proof begins with functional induction on Grammar.JSONmembers.derive,
 -- producing an inductive hypothesis applicable to the symbol case.
-theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ]
+theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ
   (r: Regex (φ × Ref n)) (node: Node α):
-  Rule.denote G Φ (Grammar.JSONmembers.derive G (decideRel Φ) r node)
+  Rule.denote G Φ (Grammar.JSONmembers.derive G Φ r node)
   = Lang.derive (Rule.denote G Φ r) node := by
   fun_induction (Grammar.JSONmembers.derive G (fun p a => Φ p a)) r node with
   | case1 => -- emptyset
@@ -293,8 +293,8 @@ theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel �
     rw [ih2]
     rfl
 
-theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (nodes: Hedge α):
-  Grammar.Rule.denote G Φ (List.foldl (Grammar.JSONmembers.derive G (decideRel Φ)) r nodes) = Lang.derives (Grammar.Rule.denote G Φ r) nodes := by
+theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α → Bool) (r: Regex (φ × Ref n)) (nodes: Hedge α):
+  Grammar.Rule.denote G Φ (List.foldl (Grammar.JSONmembers.derive G Φ) r nodes) = Lang.derives (Grammar.Rule.denote G Φ r) nodes := by
   rw [Lang.derives_foldl]
   induction nodes generalizing r with
   | nil =>
@@ -302,13 +302,13 @@ theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α �
   | cons x xs ih =>
     simp only [List.foldl_cons]
     have h := Grammar.JSONmembers.derive_commutes G Φ r x
-    have ih' := ih (Grammar.JSONmembers.derive G (decideRel Φ) r x)
+    have ih' := ih (Grammar.JSONmembers.derive G Φ r x)
     rw [h] at ih'
     exact ih'
 
 -- Using theorem derive_commutes we can prove validate_commutes.
-theorem Grammar.JSONmembers.validate_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (nodes: Hedge α):
-  (validate G (decideRel Φ) nodes = true) = (Grammar.denote G Φ) nodes := by
+theorem Grammar.JSONmembers.validate_commutes (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α):
+  (validate G Φ nodes = true) = (Grammar.denote G Φ) nodes := by
   unfold Grammar.denote
   rw [← Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
   unfold validate
@@ -316,8 +316,8 @@ theorem Grammar.JSONmembers.validate_commutes (G: Grammar n φ) (Φ: φ → α �
   rw [← Grammar.null_commutes]
 
 -- Using validate_commutes we can prove mem_filter.
-theorem Grammar.JSONmembers.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) (xss: List (Hedge α)) :
-  ∀ xs, (xs ∈ Grammar.JSONmembers.filter G (decideRel Φ) xss) ↔ (Lang.MemFilter (Grammar.denote G Φ) xss xs) := by
+theorem Grammar.JSONmembers.mem_filter (Φ: φ → α → Bool) (G: Grammar n φ) (xss: List (Hedge α)) :
+  ∀ xs, (xs ∈ Grammar.JSONmembers.filter G Φ xss) ↔ (Lang.MemFilter (Grammar.denote G Φ) xss xs) := by
   unfold Grammar.JSONmembers.filter
   intro xs
   rw [List.mem_filter]

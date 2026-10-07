@@ -25,7 +25,7 @@ def Regex.null: (r: Regex σ) → Bool
   | xor r1 r2 => ((null r1) || (null r2)) && (!(null r1 && null r2))
 
 -- denote defines the semantics of a regular expression.
-def Regex.denote (Φ: σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
+def Regex.denote (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): Prop :=
   match r with
   | emptyset => False
   | emptystr => xs = []
@@ -70,7 +70,7 @@ def starAny: Regex σ := compliment emptyset
 def contains (r: Regex σ) := concat starAny (concat r starAny)
 
 -- denote_onlyif proves the the onlyif function (or operator) is equivalent to the language semantics.
-theorem denote_onlyif {α: Type} (Φ : σ → α → Prop) (condition: Prop) [dcond: Decidable condition] (r: Regex σ):
+theorem denote_onlyif {α: Type} (Φ : σ → α → Bool) (condition: Prop) [dcond: Decidable condition] (r: Regex σ):
   denote Φ (onlyif condition r) = Lang.onlyif condition (denote Φ r) := by
   unfold Lang.onlyif
   unfold onlyif
@@ -157,17 +157,17 @@ theorem derive_star {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ
 -- * Regex.denote Φ (Regex.concat p q) = Lang.concat (Regex.denote Φ p) (Regex.denote Φ q)
 -- * Regex.denote Φ (Regex.star r) = Lang.star (Regex.denote Φ r)
 
-theorem denote_emptyset {α: Type} {σ: Type} (Φ: σ → α → Prop):
+theorem denote_emptyset {α: Type} {σ: Type} (Φ: σ → α → Bool):
   denote Φ emptyset = Lang.emptyset := by
   funext xs
   simp only [denote, Lang.emptyset]
 
-theorem denote_emptystr {α: Type} {σ: Type} (Φ: σ → α → Prop):
+theorem denote_emptystr {α: Type} {σ: Type} (Φ: σ → α → Bool):
   denote Φ emptystr = Lang.emptystr := by
   funext xs
   simp only [denote, Lang.emptystr]
 
-theorem denote_symbol {α: Type} {σ: Type} (Φ: σ → α → Prop) (s: σ):
+theorem denote_symbol {α: Type} {σ: Type} (Φ: σ → α → Bool) (s: σ):
   denote Φ (symbol s) = Lang.symbol Φ s := by
   funext xs
   cases xs with
@@ -186,17 +186,17 @@ theorem denote_symbol {α: Type} {σ: Type} (Φ: σ → α → Prop) (s: σ):
       -- aesop?
       simp_all only [List.cons.injEq, reduceCtorEq, and_false, false_and, exists_false]
 
-theorem denote_or {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+theorem denote_or {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1 r2: Regex σ):
   denote Φ (or r1 r2) = Lang.or (denote Φ r1) (denote Φ r2) := by
   funext
   simp only [denote, Lang.or]
 
-theorem denote_concat {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+theorem denote_concat {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1 r2: Regex σ):
   denote Φ (concat r1 r2) = Lang.concat (denote Φ r1) (denote Φ r2) := by
   funext
   simp only [denote, Lang.concat]
 
-theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1: Regex σ) (xs: List α):
+theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ) (xs: List α):
   denote Φ (star r1) xs ↔ Lang.star (denote Φ r1) xs := by
   cases xs with
   | nil =>
@@ -222,12 +222,12 @@ theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1: Rege
       exact h2
   termination_by xs.length
 
-theorem denote_star {α: Type} {σ: Type} (Φ: σ → α → Prop) (r: Regex σ):
+theorem denote_star {α: Type} {σ: Type} (Φ: σ → α → Bool) (r: Regex σ):
   denote Φ (star r) = Lang.star (denote Φ r) := by
   funext xs
   rw [denote_star_iff]
 
-theorem denote_interleave {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+theorem denote_interleave {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1 r2: Regex σ):
   denote Φ (interleave r1 r2) = Lang.interleave (denote Φ r1) (denote Φ r2) := by
   funext xs
   cases xs with
@@ -238,24 +238,24 @@ theorem denote_interleave {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2:
     rw [Lang.interleave]
     rw [denote]
 
-theorem denote_and {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+theorem denote_and {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1 r2: Regex σ):
   denote Φ (and r1 r2) = Lang.and (denote Φ r1) (denote Φ r2) := by
   funext
   simp only [denote, Lang.and]
 
-theorem denote_compliment {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1: Regex σ):
+theorem denote_compliment {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ):
   denote Φ (compliment r1) = Lang.compliment (denote Φ r1) := by
   funext
   simp only [denote, Lang.compliment]
 
-theorem denote_xor {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+theorem denote_xor {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1 r2: Regex σ):
   denote Φ (xor r1 r2) = Lang.xor (denote Φ r1) (denote Φ r2) := by
   funext
   simp only [denote, Lang.xor]
 
 -- Commutes proofs
 
-theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex σ):
+theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ):
   ((null r) = true) = Lang.null (denote Φ r) := by
   unfold Lang.null
   induction r with
@@ -322,7 +322,7 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
     rw [Bool.and_eq_true]
     grind
 
-theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (x: α):
+theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (x: α):
   denote Φ (derive (fun s a => Φ s a) r x) = Lang.derive (denote Φ r) x := by
   induction r with
   | emptyset =>
@@ -337,7 +337,6 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
     unfold derive
     rw [denote_onlyif]
     simp only [denote_emptystr]
-    simp only [decide_eq_true_eq]
   | or r1 r2 ih1 ih2 =>
     simp only [denote_or, derive]
     rw [Lang.derive_or]
@@ -385,15 +384,8 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
     rw [ih1]
     rw [ih2]
 
-theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (x: α):
-  denote (fun s a => Φ s a) (derive Φ r x) = Lang.derive (denote (fun s a => Φ s a) r) x := by
-  rw [← derive_commutes]
-  congr
-  funext s a
-  simp only [Bool.decide_eq_true]
-
-theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  denote Φ (List.foldl (derive (decideRel Φ)) r xs) = Lang.derives (denote Φ r) xs := by
+theorem derives_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  denote Φ (List.foldl (derive Φ) r xs) = Lang.derives (denote Φ r) xs := by
   rw [Lang.derives_foldl]
   induction xs generalizing r with
   | nil =>
@@ -405,8 +397,8 @@ theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (
     rw [h] at ih'
     exact ih'
 
-theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  (validate (decideRel Φ) r xs = true) = (denote Φ r) xs := by
+theorem validate_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  (validate Φ r xs = true) = (denote Φ r) xs := by
   rw [← Lang.validate (denote Φ r) xs]
   unfold validate
   rw [← derives_commutes]
@@ -415,7 +407,7 @@ theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] 
 -- decidableDenote shows that the derivative algorithm is decidable
 -- https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/restricting.20axioms
 @[reducible]
-def decidableDenote (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ): DecidablePred (denote Φ r) :=
+def decidableDenote (Φ: σ → α → Bool) (r: Regex σ): DecidablePred (denote Φ r) :=
   fun xs => decidable_of_decidable_of_eq (validate_commutes Φ r xs)
 
 end Regex
@@ -429,8 +421,8 @@ def Regex.filter (Φ: σ → α → Bool) (r: Regex σ) (xs: List (List α)) :=
 namespace Regex
 
 -- mem_filter proves that the filter implementation matches the semantic definition.
-theorem mem_filter (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xss: List (List α)) :
-  ∀ xs, (xs ∈ filter (decideRel Φ) r xss) ↔ (Lang.MemFilter (denote Φ r) xss xs) := by
+theorem mem_filter (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)) :
+  ∀ xs, (xs ∈ filter Φ r xss) ↔ (Lang.MemFilter (denote Φ r) xss xs) := by
   unfold filter
   intro xs
   rw [List.mem_filter]

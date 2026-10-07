@@ -67,20 +67,13 @@ theorem derive_star {α: Type} {σ: Type} (Φ: σ → α → Bool) (r1: Regex σ
   repeat rw [Regex.IfExpr.derive_is_Regex_derive]
   rw [Regex.derive_star]
 
-theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):
-  Regex.denote (fun s a => Φ s a) (Regex.IfExpr.derive (flip Φ a) r)
-  = Lang.derive (Regex.denote (fun s a => Φ s a) r) a := by
-  rw [Regex.IfExpr.derive_is_Regex_derive]
-  rw [← Regex.derive_commutesb]
-
-theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (a: α):
-  denote Φ (Regex.IfExpr.derive (flip (decideRel Φ) a) r) = Lang.derive (denote Φ r) a := by
+theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):
+  denote Φ (Regex.IfExpr.derive (flip Φ a) r) = Lang.derive (denote Φ r) a := by
   rw [Regex.IfExpr.derive_is_Regex_derive]
   rw [← Regex.derive_commutes]
-  congr
 
-theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  denote Φ ((List.foldl (fun dr x => Regex.IfExpr.derive (flip (decideRel Φ) x) dr)) r xs) = Lang.derives (denote Φ r) xs := by
+theorem derives_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  denote Φ ((List.foldl (fun dr x => Regex.IfExpr.derive (flip Φ x) dr)) r xs) = Lang.derives (denote Φ r) xs := by
   rw [Lang.derives_foldl]
   induction xs generalizing r with
   | nil =>
@@ -88,12 +81,12 @@ theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (
   | cons x xs ih =>
     simp only [List.foldl_cons]
     have h := derive_commutes Φ r x
-    have ih' := ih (Regex.IfExpr.derive (flip (decideRel Φ) x) r)
+    have ih' := ih (Regex.IfExpr.derive (flip Φ x) r)
     rw [h] at ih'
     exact ih'
 
-theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  (Regex.IfExpr.validate (decideRel Φ) r xs = true) = (denote Φ r) xs := by
+theorem validate_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  (Regex.IfExpr.validate Φ r xs = true) = (denote Φ r) xs := by
   rw [← Lang.validate (denote Φ r) xs]
   unfold Regex.IfExpr.validate
   rw [← derives_commutes]

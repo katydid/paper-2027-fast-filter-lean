@@ -1,6 +1,5 @@
 import VerifiedFilter.Std.Bytes
 import VerifiedFilter.Std.Int
-import VerifiedFilter.Std.Decidable
 import VerifiedFilter.Std.String
 import VerifiedFilter.Std.Float
 
@@ -11,6 +10,9 @@ import Mathlib.Tactic.RewriteSearch
 import Aesop
 
 namespace TestSuiteLib
+
+def decideRel (p : α → β → Prop) [d: DecidableRel p]: α → β → Bool :=
+  fun a b => decide (p a b)
 
 def List.get? {α : Type u}: (as : List α) → (index: Nat) → Except String α
   | List.nil, _ => throw "index out of bounds"

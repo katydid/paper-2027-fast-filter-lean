@@ -52,20 +52,13 @@ theorem derive_unfolds_to_map (Φ: σ → α → Bool) (r: Regex σ) (a: α):
   simp
   rw [Vector.map_zip_is_zip_map]
 
-theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):
-  Regex.denote (fun s a => Φ s a) (Katydid.derive (flip Φ a) r)
-  = Lang.derive (Regex.denote (fun s a => Φ s a) r) a := by
-  rw [Regex.Katydid.derive_is_Regex_derive]
-  rw [← Regex.derive_commutesb]
-
-theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (a: α):
-  denote Φ (Katydid.derive (flip (decideRel Φ) a) r) = Lang.derive (denote Φ r) a := by
+theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):
+  denote Φ (Katydid.derive (flip Φ a) r) = Lang.derive (denote Φ r) a := by
   rw [Regex.Katydid.derive_is_Regex_derive]
   rw [← Regex.derive_commutes]
-  congr
 
-theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  denote Φ ((List.foldl (fun dr x => Regex.Katydid.derive (flip (decideRel Φ) x) dr)) r xs) = Lang.derives (denote Φ r) xs := by
+theorem derives_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  denote Φ ((List.foldl (fun dr x => Regex.Katydid.derive (flip Φ x) dr)) r xs) = Lang.derives (denote Φ r) xs := by
   rw [Lang.derives_foldl]
   induction xs generalizing r with
   | nil =>
@@ -73,12 +66,12 @@ theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (
   | cons x xs ih =>
     simp only [List.foldl_cons]
     have h := derive_commutes Φ r x
-    have ih' := ih (derive (flip (decideRel Φ) x) r)
+    have ih' := ih (derive (flip Φ x) r)
     rw [h] at ih'
     exact ih'
 
-theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  (Katydid.validate (decideRel Φ) r xs = true) = (denote Φ r) xs := by
+theorem validate_commutes {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  (Katydid.validate Φ r xs = true) = (denote Φ r) xs := by
   rw [← Lang.validate (denote Φ r) xs]
   unfold validate
   rw [← derives_commutes]
@@ -87,8 +80,8 @@ theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] 
 def filter (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)): List (List α) :=
   List.filter (Katydid.validate Φ r) xss
 
-theorem mem_filter (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xss: List (List α)) :
-  ∀ xs, (xs ∈ Katydid.filter (decideRel Φ) r xss) ↔ (Lang.MemFilter (denote Φ r) xss xs) := by
+theorem mem_filter (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)) :
+  ∀ xs, (xs ∈ Katydid.filter Φ r xss) ↔ (Lang.MemFilter (denote Φ r) xss xs) := by
   unfold filter
   intro xs
   rw [List.mem_filter]

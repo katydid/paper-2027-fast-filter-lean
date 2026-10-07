@@ -75,8 +75,8 @@ theorem StateMemoize.Regex.derive.run_is_sound [DecidableEq σ] [Hashable σ]
   rw [hdr]
 
 theorem Regex.StateMemoize.derive_commutes {σ: Type} {α: Type} [DecidableEq σ] [Hashable σ]
-  (state: memoizeState σ) (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (a: α):
-  denote Φ (StateMemoize.Regex.derive.run state (flip (decideRel Φ) a) r) = Lang.derive (denote Φ r) a := by
+  (state: memoizeState σ) (Φ: σ → α → Bool) (r: Regex σ) (a: α):
+  denote Φ (StateMemoize.Regex.derive.run state (flip Φ a) r) = Lang.derive (denote Φ r) a := by
   rw [StateMemoize.Regex.derive.run_is_sound]
   rw [← Regex.Katydid.derive_commutes]
 
@@ -86,17 +86,17 @@ theorem StateMemoize.Regex.validate.run_unfold [DecidableEq σ] [Hashable σ]
   rfl
 
 theorem StateMemoize.validate.run_is_sound {σ: Type} {α: Type} [DecidableEq σ] [Hashable σ]
-  (state: memoizeState σ) (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  StateMemoize.Regex.validate.run state (decideRel Φ) r xs = Regex.Katydid.validate (decideRel Φ) r xs := by
+  (state: memoizeState σ) (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  StateMemoize.Regex.validate.run state Φ r xs = Regex.Katydid.validate Φ r xs := by
   rw [StateMemoize.Regex.validate.run_unfold]
-  generalize StateMemoize.run state (Regex.Memoize.validate (decideRel Φ) r xs) = x
+  generalize StateMemoize.run state (Regex.Memoize.validate Φ r xs) = x
   obtain ⟨b, hd⟩ := x
   simp only
   assumption
 
 theorem Regex.StateMemoize.validate_commutes {σ: Type} {α: Type} [DecidableEq σ] [Hashable σ]
-  (state: memoizeState σ) (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
-  StateMemoize.Regex.validate.run state (decideRel Φ) r xs = denote Φ r xs := by
+  (state: memoizeState σ) (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
+  StateMemoize.Regex.validate.run state Φ r xs = denote Φ r xs := by
   rw [StateMemoize.validate.run_is_sound]
   rw [← Regex.Katydid.validate_commutes]
 
@@ -106,11 +106,11 @@ theorem StateMemoize.Regex.filter.run_unfold [DecidableEq σ] [Hashable σ]
   rfl
 
 theorem Regex.StateMemoize.mem_filter {σ: Type} {α: Type} [DecidableEq σ] [Hashable σ]
-  (state: memoizeState σ) (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List (List α)) :
-  ∀ x, (x ∈ StateMemoize.Regex.filter.run state (decideRel Φ) r xs) ↔ (Lang.MemFilter (denote Φ r) xs x) := by
+  (state: memoizeState σ) (Φ: σ → α → Bool) (r: Regex σ) (xs: List (List α)) :
+  ∀ x, (x ∈ StateMemoize.Regex.filter.run state Φ r xs) ↔ (Lang.MemFilter (denote Φ r) xs x) := by
   intro x
   rw [StateMemoize.Regex.filter.run_unfold]
-  generalize StateMemoize.run state (Regex.Memoize.filter (decideRel Φ) r xs) = h
+  generalize StateMemoize.run state (Regex.Memoize.filter Φ r xs) = h
   obtain ⟨res, hres⟩ := h
   simp only
   rw [hres]
