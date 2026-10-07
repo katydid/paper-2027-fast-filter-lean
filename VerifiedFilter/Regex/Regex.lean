@@ -115,6 +115,11 @@ def Regex.validate (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): Bool :=
 
 namespace Regex
 
+#guard Regex.derive (· == ·) (concat (symbol 'a') (symbol 'b')) 'a'
+  = or (concat emptystr (symbol 'b')) emptyset -- symbol 'b'
+#guard Regex.derive (· == ·) (star (symbol 'a')) 'a'
+  = concat emptystr (star (symbol 'a')) -- star (symbol 'a')
+
 -- derive theorems
 
 theorem derive_emptyset {α: Type} {σ: Type} (Φ: σ → α → Bool) (a: α):
