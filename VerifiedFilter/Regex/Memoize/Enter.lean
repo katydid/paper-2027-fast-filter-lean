@@ -10,7 +10,7 @@ namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev enterParam (σ: Type) := Regex σ
 abbrev enterMemTable (σ: Type) [DecidableEq σ] [Hashable σ] := MemTable enter (α := enterParam σ)
-abbrev enterResult (r: Regex σ) := Vector σ (symcount r)
+abbrev enterResult (r: Regex σ) := Vector σ |r|
 
 def MemTable.enter [DecidableEq σ] [Hashable σ] [Monad m] [monadState: MonadState (enterMemTable σ) m]
   (param: Regex σ): m { res // res = enter param } :=

@@ -34,7 +34,7 @@ theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
     have hh1 :
       r1 =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2)
           (by omega)
         ) := by
@@ -64,7 +64,7 @@ theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
     have hh1 :
       r1 =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2)
           (by omega)
         ) := by
@@ -99,7 +99,7 @@ theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
     have hh1 :
       r1 =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2)
           (by omega)
         ) := by
@@ -129,7 +129,7 @@ theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
     have hh1 :
       r1 =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2)
           (by omega)
         ) := by
@@ -164,7 +164,7 @@ theorem extractAcc_replace_is_id (r: Regex σ) (acc: Vector σ l):
     have hh1 :
       r1 =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2)
           (by omega)
         ) := by
@@ -224,7 +224,7 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → �
     have hh1 :
       Regex.map r1 f =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.map f (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2))
           (by omega)
         ) := by
@@ -257,7 +257,7 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → �
     have hh1 :
       Regex.map r1 f =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.map f (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2))
           (by omega)
         ) := by
@@ -296,7 +296,7 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → �
     have hh1 :
       Regex.map r1 f =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.map f (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2))
           (by omega)
         ) := by
@@ -329,7 +329,7 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → �
     have hh1 :
       Regex.map r1 f =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.map f (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2))
           (by omega)
         ) := by
@@ -368,7 +368,7 @@ theorem extractAcc_replace_is_fmap (r: Regex α) (acc: Vector α l) (f: α → �
     have hh1 :
       Regex.map r1 f =
         (replaceLE
-          (RegexID.cast_assoc (RegexID.cast_add (symcount r2) (extractAcc r1 acc).1))
+          (RegexID.cast_assoc (RegexID.cast_add |r2| (extractAcc r1 acc).1))
           (Vector.map f (Vector.cast_assoc (extractAcc r2 (extractAcc r1 acc).2).2))
           (by omega)
         ) := by

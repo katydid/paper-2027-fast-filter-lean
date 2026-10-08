@@ -14,8 +14,8 @@ import VerifiedFilter.Regex.Memoize.Leaves
 namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydids (m: Type → Type u) σ [DecidableEq σ] [Hashable σ] where
-  entersM : (rs: Σ (l: Nat), Vector (Regex σ) l) → m { res: Vector σ (symcounts rs.2) // res = Regex.enters rs.2 }
-  leavesM : (param: Σ (l: Nat), Σ (rs: Vector (Regex σ) l), (Vector Bool (symcounts rs)))
+  entersM : (rs: Σ (l: Nat), Vector (Regex σ) l) → m { res: Vector σ |rs.2| // res = Regex.enters rs.2 }
+  leavesM : (param: Σ (l: Nat), Σ (rs: Vector (Regex σ) l), (Vector Bool |rs|))
              → m { res: Vector (Regex σ) param.1 // res = Regex.leaves param.2.1 param.2.2 }
 
 instance (m: Type → Type u) (σ: Type) [DecidableEq σ] [Hashable σ] [Monad m]

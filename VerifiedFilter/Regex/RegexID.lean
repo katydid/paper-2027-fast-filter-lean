@@ -15,8 +15,8 @@ def RegexID.cast (r: RegexID n) (h: n = m): RegexID m :=
   match h with
   | Eq.refl _ => r
 
-abbrev RegexID.cast_assoc (r: RegexID (n + symcount r1 + symcount r2)): RegexID (n + (symcount r1 + symcount r2)) :=
-  have h : (n + symcount r1 + symcount r2) = n + (symcount r1 + symcount r2) := by
+abbrev RegexID.cast_assoc {r1 r2: Regex σ} (r: RegexID (n + |r1| + |r2|)): RegexID (n + (|r1| + |r2|)) :=
+  have h : (n + |r1| + |r2|) = n + (|r1| + |r2|) := by
     rw [← Nat.add_assoc]
   RegexID.cast r h
 

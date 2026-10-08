@@ -9,48 +9,49 @@ import VerifiedFilter.Std.Vector
 namespace VerifiedFilter.Regex.Regex
 
 def extractsAcc (rs: Vector (Regex σ) l) (acc: Vector σ lacc):
-  (Vector (Regex (Fin (lacc + symcounts rs))) l) × (Vector σ (lacc + symcounts rs)) :=
+  (Vector (Regex (Fin (lacc + |rs|))) l) × (Vector σ (lacc + |rs|)) :=
   match l with
   | 0 =>
-    ( #v[], Vector.cast (xs := acc) (by
+    ( #v[], Vector.cast (xs := acc) (h := by
       cases rs with
-      | mk a h =>
+      | mk a h' =>
       cases a with
       | mk a' =>
-      simp at h
-      simp [h]
-      simp [symcounts]
+      simp at h'
+      simp [NumberOfSymbols.numberOfSymbols, nsyms]
+      rw [h']
+      simp
     ) )
   | l' + 1 =>
     let (regexid1, acc1) := extractAcc (Vector.back rs) acc
-    let regexid1': Regex (Fin (lacc + symcounts rs)) :=
-      RegexID.castLE (m := lacc + symcounts rs) regexid1 (by
-        rw [symcounts_add1]
+    let regexid1': Regex (Fin (lacc + |rs|)) :=
+      RegexID.castLE (m := lacc + |rs|) regexid1 (by
+        rw [nsyms_add1]
         omega
       )
 
     let (regexids, accs) := extractsAcc (Vector.pop rs) acc1
-    let regexesids' : Vector (Regex (Fin (lacc + symcounts rs))) l' :=
+    let regexesids' : Vector (Regex (Fin (lacc + |rs|))) l' :=
       RegexID.casts regexids (by
-        rw [symcounts_add1]
+        rw [nsyms_add1]
         ac_rfl
       )
 
-    let regexidcons: Vector (Regex (Fin (lacc + symcounts rs))) (l' + 1) :=
+    let regexidcons: Vector (Regex (Fin (lacc + |rs|))) (l' + 1) :=
       Vector.cast (xs := Vector.push regexesids' regexid1') (by
         simp only
       )
 
-    let accs' : Vector σ (lacc + symcounts rs) :=
+    let accs' : Vector σ (lacc + |rs|) :=
       Vector.cast (xs := accs) (by
-        rw [symcounts_add1]
+        rw [nsyms_add1]
         ac_rfl
       )
     (regexidcons, accs')
 
 def extracts (xs: Vector (Regex σ) nregex):
-  (Vector (RegexID (symcounts xs)) nregex) × (Vector σ (symcounts xs)) :=
+  (Vector (RegexID |xs|) nregex) × (Vector σ |xs|) :=
   let (xs0, symbols0) := extractsAcc xs #v[]
-  let symbols': Vector σ (symcounts xs) := Vector.cast (xs := symbols0) (by ac_rfl)
-  let xs': Vector (RegexID (symcounts xs)) nregex := RegexID.casts xs0 (by ac_rfl)
+  let symbols': Vector σ |xs| := Vector.cast (xs := symbols0) (by ac_rfl)
+  let xs': Vector (RegexID |xs|) nregex := RegexID.casts xs0 (by ac_rfl)
   (xs', symbols')

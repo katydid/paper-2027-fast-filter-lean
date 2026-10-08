@@ -100,7 +100,7 @@ theorem Grammar.StateMemoize.mem_filter [DecidableEq φ] [Hashable φ]
 
 open Regex
 
-abbrev leave (r: Regex σ) (param2: (Vector Bool (symcount r))) := Regex.leave r param2
+abbrev leave (r: Regex σ) (param2: Vector Bool |r|) := Regex.leave r param2
 
 theorem StateM.StateT.run11 :
   StateM.run' (StateT.run' f s1) s2 = (StateM.run (StateT.run f s1) s2).1.1 := by

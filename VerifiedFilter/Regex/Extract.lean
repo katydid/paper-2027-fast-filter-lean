@@ -10,12 +10,13 @@ import VerifiedFilter.Regex.RegexID
 namespace VerifiedFilter.Regex.Regex
 
 private theorem lt_add_symbol:
-  n < n + symcount (symbol s) := by
-  simp only [symcount]
+  n < n + |symbol s| := by
+  simp only [|·|]
+  simp only [nsym]
   omega
 
 -- extractAcc is a helper function for writing the extract function.
-def extractAcc (r: Regex σ) (acc: Vector σ n): RegexID (n + symcount r) × Vector σ (n + symcount r) :=
+def extractAcc (r: Regex σ) (acc: Vector σ n): RegexID (n + |r|) × Vector σ (n + |r|) :=
   match r with
   | emptyset => (emptyset, acc)
   | emptystr => (emptystr, acc)
@@ -23,28 +24,28 @@ def extractAcc (r: Regex σ) (acc: Vector σ n): RegexID (n + symcount r) × Vec
   | or r1 r2 =>
     let (rid1, acc1) := extractAcc r1 acc
     let (rid2, acc2) := extractAcc r2 acc1
-    (or (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
+    (or (rid1.cast_add |r2|).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
   | concat r1 r2 =>
     let (rid1, acc1) := extractAcc r1 acc
     let (rid2, acc2) := extractAcc r2 acc1
-    (concat (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
+    (concat (rid1.cast_add |r2|).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
   | star r1 => let (rid1, acc1) := extractAcc r1 acc; (star rid1, acc1)
   | interleave r1 r2 =>
     let (rid1, acc1) := extractAcc r1 acc
     let (rid2, acc2) := extractAcc r2 acc1
-    (interleave (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
+    (interleave (rid1.cast_add |r2|).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
   | and r1 r2 =>
     let (rid1, acc1) := extractAcc r1 acc
     let (rid2, acc2) := extractAcc r2 acc1
-    (and (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
+    (and (rid1.cast_add |r2|).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
   | compliment r1 => let (rid1, acc1) := extractAcc r1 acc; (compliment rid1, acc1)
   | xor r1 r2 =>
     let (rid1, acc1) := extractAcc r1 acc
     let (rid2, acc2) := extractAcc r2 acc1
-    (xor (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
+    (xor (rid1.cast_add |r2|).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
 
 -- extract extracts the symbols from a regular expression into a Vector and replaces them with indices into the Vector.
-def extract (r: Regex σ): Regex (Fin (symcount r)) × Vector σ (symcount r) :=
+def extract (r: Regex σ): Regex (Fin |r|) × Vector σ |r| :=
   let (rid, xs) := extractAcc r #v[]
   (RegexID.cast rid (by omega), Vector.cast (by omega) xs)
 
@@ -56,12 +57,12 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
   Vector.toList (extractAcc r acc).2 = Vector.toList (acc ++ (extractAcc r #v[]).2) := by
   induction r generalizing acc n  with
   | emptyset =>
-    simp only [symcount, Nat.add_zero, extractAcc, Vector.append_nil, Vector.cast_toList]
+    simp only [|·|, Nat.add_zero, extractAcc, Vector.append_nil, Vector.cast_toList]
   | emptystr =>
-    simp only [symcount, Nat.add_zero, extractAcc, Vector.append_nil, Vector.cast_toList]
+    simp only [|·|, Nat.add_zero, extractAcc, Vector.append_nil, Vector.cast_toList]
   | symbol s =>
     simp only [extractAcc]
-    simp only [symcount, Nat.reduceAdd, Vector.push_mk, List.push_toArray, List.nil_append,
+    simp only [|·|, nsym, Nat.reduceAdd, Vector.push_mk, List.push_toArray, List.nil_append,
       Vector.append_singleton]
   | or r1 r2 ih1 ih2 =>
     simp only [extractAcc]
@@ -160,7 +161,7 @@ theorem extract_take_toList (acc: Vector σ l):
     (Vector.take
       (extractAcc r2
         (extractAcc r1 acc).2).2
-      (l + symcount r1)
+      (l + |r1|)
     )
   )
   =
@@ -175,7 +176,7 @@ theorem extractAcc_take (acc: Vector σ l):
   (Vector.take
     (extractAcc r2
       (extractAcc r1 acc).2).2
-    (l + symcount r1)
+    (l + |r1|)
   )
   =
     Vector.cast
@@ -193,7 +194,7 @@ theorem extractAcc_take_toList_fmap (acc: Vector σ l):
         (extractAcc r2
           (extractAcc r1 acc).2).2
       )
-      (l + symcount r1)
+      (l + |r1|)
     )
   )
   =
@@ -219,7 +220,7 @@ theorem extractAcc_take_fmap (acc: Vector α l) (f: α → β):
       (extractAcc r2
         (extractAcc r1 acc).2).2
     )
-    (l + symcount r1)
+    (l + |r1|)
   )
   =
     Vector.cast

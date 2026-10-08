@@ -12,7 +12,7 @@ import VerifiedFilter.Regex.Extracts
 
 namespace VerifiedFilter.Regex.Regex.Memoize
 
-abbrev leavesParam (σ: Type) := Σ (l: Nat), Σ (rs: Vector (Regex σ) l), (Vector Bool (symcounts rs))
+abbrev leavesParam (σ: Type) := Σ (l: Nat), Σ (rs: Vector (Regex σ) l), (Vector Bool |rs|)
 abbrev leavesResult (rs: leavesParam σ) :=
   match rs with
   | ⟨l, _⟩ => Vector (Regex σ) l

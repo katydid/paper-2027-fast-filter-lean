@@ -13,7 +13,7 @@ import VerifiedFilter.Regex.Extracts
 namespace VerifiedFilter.Regex.Regex.Memoize
 
 abbrev entersParam (σ: Type) := Σ (l: Nat), Vector (Regex σ) l
-abbrev entersResult (rs: entersParam σ) := Vector σ (symcounts rs.2)
+abbrev entersResult (rs: entersParam σ) := Vector σ |rs.2|
 
 abbrev enters {σ: Type}: (a: entersParam σ) → entersResult a
   | rs => Regex.enters rs.2

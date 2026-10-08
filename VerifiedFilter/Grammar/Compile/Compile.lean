@@ -16,7 +16,7 @@ def simplify (r: Regex σ): Regex σ := r
 -- It is also definitely possible to do it smarter than this.
 -- Note: we use partial, since termination is not proved.
 partial def Regex.derivatives [DecidableEq σ] (r: Regex σ): List (Regex σ) :=
-  let derivatives := Vector.map (Regex.leave r) (Vector.boolCombos (symcount r))
+  let derivatives := Vector.map (Regex.leave r) (Vector.boolCombos |r|)
   let uniqueDerivatives := List.eraseDups (List.map simplify derivatives.toList)
   if uniqueDerivatives == [r]
   then [r]
@@ -26,7 +26,7 @@ def Regex.compile [DecidableEq σ] [Hashable σ] [Monad m]
   [MemoizeKatydid m σ] (r: Regex σ): m Unit := do
   for r in Regex.derivatives r do
     _ ← MemoizeKatydid.enterM r
-    for bools in Vector.boolCombos (symcount r) do
+    for bools in Vector.boolCombos |r| do
       _ ← MemoizeKatydid.leaveM ⟨r, bools⟩
 
 def Grammar.Compile [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKatydid m (φ × Ref n)]

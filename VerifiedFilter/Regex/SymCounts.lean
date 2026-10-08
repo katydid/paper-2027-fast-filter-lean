@@ -6,29 +6,36 @@ import VerifiedFilter.Regex.SymCount
 
 namespace VerifiedFilter.Regex.Regex
 
-def symcounts (rs: Vector (Regex σ) l): Nat :=
-  Vector.foldl (· + ·) 0 (Vector.map Regex.symcount rs)
+def nsyms (rs: Vector (Regex σ) l): Nat :=
+  Vector.foldl (· + ·) 0 (Vector.map nsym rs)
 
-theorem symcounts_add (rs: Vector (Regex σ) l) (r: Regex σ):
-  symcounts (Vector.push rs r) = symcount r + symcounts rs := by
+instance: NumberOfSymbols (Vector (Regex σ) l) where
+  numberOfSymbols := nsyms
+
+#guard |#v[Regex.emptyset, Regex.symbol 1, Regex.or (Regex.symbol 1) (Regex.emptystr)]|
+  = 2
+
+theorem nsyms_add (rs: Vector (Regex σ) l) (r: Regex σ):
+  |Vector.push rs r| = |r| + |rs| := by
   -- rw??
+  simp only [|·|]
   rw [show
-      symcounts (rs.push r) =
-        Vector.foldl (fun x1 x2 => x1 + x2) 0 (Vector.map symcount (rs.push r))
+      nsyms (rs.push r) =
+        Vector.foldl (fun x1 x2 => x1 + x2) 0 (Vector.map nsym (rs.push r))
       from rfl]
   -- rw??
   rw [Vector.foldl_map]
   -- rw??
   rw [Vector.foldl_push]
   -- rw??
-  rw [Nat.add_comm r.symcount (symcounts rs)]
+  rw [Nat.add_comm r.nsym (nsyms rs)]
   -- rw??
   rw [Nat.add_left_inj]
   rw [← Vector.foldl_map]
-  rw [← symcounts]
+  rw [← nsyms]
 
-theorem symcounts_add1 (rs: Vector (Regex σ) (l + 1)):
-  symcounts rs = symcount (Vector.back rs) + symcounts (Vector.pop rs) := by
-  rw [← symcounts_add]
+theorem nsyms_add1 (rs: Vector (Regex σ) (l + 1)):
+  |rs| = |Vector.back rs| + |Vector.pop rs| := by
+  rw [← nsyms_add]
   rw [Vector.push_pop_back]
   rfl

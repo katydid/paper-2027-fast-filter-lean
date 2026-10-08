@@ -12,7 +12,7 @@ import VerifiedFilter.Regex.Regex
 
 namespace VerifiedFilter.Regex.Regex
 
-def IfExpr.enter (r: Regex σ): IfExpr σ (symcount r) := IfExpr.mk (extract r).2
+def IfExpr.enter (r: Regex σ): IfExpr σ |r| := IfExpr.mk (extract r).2
 
 #guard IfExpr.enter (or (symbol 'a') (symbol 'b'))
   = IfExpr.expr 'a'

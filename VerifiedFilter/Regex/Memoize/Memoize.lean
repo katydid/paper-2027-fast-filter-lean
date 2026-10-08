@@ -16,8 +16,8 @@ import VerifiedFilter.Regex.Memoize.Leave
 namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydid (m: Type → Type u) σ where
-  enterM: (r: Regex σ) → m { res: Vector σ (symcount r) // res = enter r }
-  leaveM: (param: Σ (r: Regex σ), (Vector Bool (symcount r)))
+  enterM: (r: Regex σ) → m { res: Vector σ |r| // res = enter r }
+  leaveM: (param: Σ (r: Regex σ), (Vector Bool |r|))
              → m { res: Regex σ // res = Regex.leave param.1 param.2 }
 
 instance (m: Type → Type u) (σ: Type) [DecidableEq σ] [Hashable σ] [Monad m]

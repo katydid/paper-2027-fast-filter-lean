@@ -13,11 +13,11 @@ def Regex.Point.derives (rs: Vector (Regex (σ × Bool)) l): Vector (Regex σ) l
 
 namespace Regex
 
-def enters (rs: Vector (Regex σ) l): Vector σ (symcounts rs) :=
+def enters (rs: Vector (Regex σ) l): Vector σ |rs| :=
   (Regex.extracts rs).2
 
-def leaves (rs: Vector (Regex σ) l) (bools: Vector Bool (symcounts rs)): (Vector (Regex σ) l) :=
-  let points: Vector (σ × Bool) (symcounts rs) := Vector.zip (Regex.extracts rs).2 bools
+def leaves (rs: Vector (Regex σ) l) (bools: Vector Bool |rs|): (Vector (Regex σ) l) :=
+  let points: Vector (σ × Bool) |rs| := Vector.zip (Regex.extracts rs).2 bools
   let replaced: Vector (Regex (σ × Bool)) l := Regex.replaces (Regex.extracts rs).1 points
   Regex.Point.derives replaced
 
