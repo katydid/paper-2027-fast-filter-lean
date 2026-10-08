@@ -12,23 +12,24 @@ import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Grammar.Lang
 
 open VerifiedFilter.Regex
+open Regex
 open Hedge
 
 def Grammar.Katydid.derive (G: Grammar n φ) (Φ: φ → α → Bool)
-  (r: Regex (φ × Ref n)) (node: Node α): Regex (φ × Ref n) :=
+  (r: Regex (φ × Ref n)) (t: Node α): Regex (φ × Ref n) :=
   let nodePred := fun ((labelPred, ref): (φ × Ref n)) =>
-    let ⟨label, children⟩ := node
-    let childr := if Φ labelPred label then G.lookup ref else Regex.emptyset
-    Regex.null (List.foldl (Grammar.Katydid.derive G Φ) childr children)
+    let ⟨label, children⟩ := t
+    let childr := if Φ labelPred label then G.lookup ref else emptyset
+    null (List.foldl (Grammar.Katydid.derive G Φ) childr children)
   Regex.Katydid.derive nodePred r -- enter r |> Vector.map nodePred |> leave r
 
 namespace Grammar.Katydid
 
-def validate (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α): Bool :=
-  Regex.null (List.foldl (derive G Φ) G.start nodes)
+def validate (G: Grammar n φ) (Φ: φ → α → Bool)
+  (hedge: Hedge α): Bool := null (List.foldl (derive G Φ) G.start hedge)
 
-def filter (G: Grammar n φ) (Φ: φ → α → Bool) (hedges: List (Hedge α)) :=
-  List.filter (validate G Φ) hedges
+def filter (G: Grammar n φ) (Φ: φ → α → Bool)
+  (hedges: List (Hedge α)) := List.filter (validate G Φ) hedges
 
 end Grammar.Katydid
 
@@ -194,8 +195,8 @@ namespace Grammar.Katydid
 -- undoing the partial application of the node, permuting the parameters,
 -- and applying theorem Regex.Katydid.derive_is_Regex_derive.
 -- The symbol case needs extra work.
-theorem derive_commutes G Φ (r: Regex (φ × Ref n)) (n: Node α):
-  Rule.denote G Φ (derive G Φ r n) = Lang.derive (Rule.denote G Φ r) n := by
+theorem derive_commutes G Φ (r: Regex (φ × Ref n)) (t: Node α):
+  Rule.denote G Φ (derive G Φ r t) = Lang.derive (Rule.denote G Φ r) t := by
   induction r with
   | emptyset =>
     rw [Grammar.Katydid.derive_emptyset]
@@ -208,7 +209,7 @@ theorem derive_commutes G Φ (r: Regex (φ × Ref n)) (n: Node α):
     rw [Lang.derive_emptystr]
   | symbol s =>
     obtain ⟨pred, ref⟩ := s
-    obtain ⟨label, children⟩ := n
+    obtain ⟨label, children⟩ := t
 
     rw [Grammar.Katydid.derive_symbol]
 
@@ -295,7 +296,7 @@ theorem derive_commutes G Φ (r: Regex (φ × Ref n)) (n: Node α):
     rw [Lang.derive_xor]
     rw [ih1]
     rw [ih2]
-  termination_by n
+  termination_by t
   decreasing_by
     apply Node.sizeOf_children hx
 

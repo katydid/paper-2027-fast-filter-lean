@@ -44,7 +44,7 @@ namespace Regex.Katydid
 
 theorem derive_unfolds_to_map (Φ: σ → α → Bool) (r: Regex σ) (a: α):
   Regex.Katydid.derive (flip Φ a) r = Regex.Point.derive
-    (replace (extract r).1 (Vector.map (fun s => (s, Φ s a)) (extract r).2)) := by
+    (replace (extract r).1 ((extract r).2.map (fun s => (s, Φ s a)))) := by
   unfold Katydid.derive
   unfold leave
   unfold enter

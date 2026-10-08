@@ -97,5 +97,5 @@ def Grammar.Memoize.validate [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKa
 
 def Grammar.Memoize.filter [DecidableEq φ] [Hashable φ] [Monad m]
   [MemoizeKatydid m (φ × Ref n)] (G: Grammar n φ) (Φ: φ → α → Bool)
-  (xs: List (Hedge α)) : m { xs' // xs' = Grammar.Katydid.filter G Φ xs } :=
+  (xs: List (Hedge α)): m { xs' // xs' = Grammar.Katydid.filter G Φ xs } :=
   List.filterMemoize (Grammar.Katydid.validate G Φ) (Grammar.Memoize.validate G Φ) xs

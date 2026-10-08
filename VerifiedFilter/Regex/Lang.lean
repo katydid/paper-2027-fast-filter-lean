@@ -15,7 +15,7 @@ def Lang (α: Type): Type := List α → Prop
 def Lang.null (R: Lang α): Prop := R []
 
 -- The derivative of a language is the language consisting of all strings remaining after the input element has been matched.
-def Lang.derive (R: Lang α) (x: α): Lang α := fun (xs: List α) => R (x :: xs)
+def Lang.derive (R: Lang α) (x: α): Lang α := fun xs => R (x :: xs)
 
 def Lang.emptyset: Lang α := fun _ => False
 

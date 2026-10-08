@@ -74,14 +74,14 @@ open Regex
 -- Imperative version of Grammar.Fused.derive
 partial def Grammar.Fused.derive
   [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (G: Grammar n φ) (Φ: φ → m α → m Bool)
-  (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
+  (G: Grammar n φ) (Φ: φ → m α → m Bool) (rs: Vector (Regex (φ × Ref n)) l)
+  : m (Vector (Regex (φ × Ref n)) l) := do
   let mut drs := rs
   if Vector.all rs Regex.unescapable then Parser.skip; return drs
   let mut h := ← Parser.next
   while h == Hint.value do
     let enterSymbols    ← MemoizeKatydids.entersM ⟨l, drs⟩
-    let childrs ← Vector.mapM (xs := enterSymbols.val) (fun ⟨pred, ref⟩ => do
+    let childrs ← enterSymbols.val.mapM (fun ⟨pred, ref⟩ =>
       return if ← Φ pred Parser.token then G.lookup ref else emptyset)
     let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs
     drs :=              ← MemoizeKatydids.leavesM ⟨l, drs, childbs⟩

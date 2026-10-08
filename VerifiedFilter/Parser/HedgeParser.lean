@@ -309,36 +309,35 @@ def runs (x: HedgeParser α β) (h: Hedge α): Bool :=
 open Token
 
 def exampleParse1 [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
-  assertEq Hint.enter (← p.next) -- enter Hedge.Node
-  assertEq Hint.value (← p.next); assertEq (Token.string "blogpost") (← p.token)
-  assertEq Hint.enter (← p.next) -- enter blogpost
-  assertEq Hint.value (← p.next); assertEq (Token.string "author") (← p.token)
+  assert Hint.enter (← p.next) -- enter Hedge.Node
+  assert Hint.value (← p.next); assert (Token.string "blogpost") (← p.token)
+  assert Hint.enter (← p.next) -- enter blogpost
+  assert Hint.value (← p.next); assert (Token.string "author") (← p.token)
   _ ← p.skip                     -- skip author's children, username, ...
-  assertEq Hint.value (← p.next); assertEq (Token.string "content") (← p.token)
-  assertEq Hint.enter (← p.next); assertEq Hint.leave (← p.next)
-  assertEq Hint.leave (← p.next) -- leave blogpost
-  assertEq Hint.leave (← p.next) -- leave Hedge.Node
-  assertEq Hint.eof (← p.next)
+  assert Hint.value (← p.next); assert (Token.string "content") (← p.token)
+  assert Hint.enter (← p.next); assert Hint.leave (← p.next)
+  assert Hint.leave (← p.next) -- leave blogpost
+  assert Hint.leave (← p.next) -- leave Hedge.Node
+  assert Hint.eof (← p.next)
 
 #guard runs exampleParse1 [node (Token.string "blogpost") [
-    node (Token.string "author") [
-      node (Token.string "username") [node (Token.string "Khaleesi") []]],
-    node (Token.string "content") []
-  ]]
+  node (Token.string "author") [
+    node (Token.string "username") [node (Token.string "Khaleesi") []]],
+  node (Token.string "content") []]]
 
 def exampleParse [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
-  assertEq (← p.next) Hint.enter -- enter blogpost
-  assertEq (← p.next) Hint.value; assertEq (← p.token) (string "author")
+  assert (← p.next) Hint.enter -- enter blogpost
+  assert (← p.next) Hint.value; assert (← p.token) (string "author")
   _ ← p.skip                     -- skip author's children, username, ...
-  assertEq (← p.next) Hint.value; assertEq (← p.token) (string "content")
-  assertEq (← p.next) Hint.enter; assertEq (← p.next) Hint.leave
-  assertEq (← p.next) Hint.leave -- leave blogpost
-  assertEq (← p.next) Hint.eof
+  assert (← p.next) Hint.value; assert (← p.token) (string "content")
+  assert (← p.next) Hint.enter; assert (← p.next) Hint.leave
+  assert (← p.next) Hint.leave -- leave blogpost
+  assert (← p.next) Hint.eof
 
 #guard runs exampleParse [
-    node (Token.string "author") [
-      node (Token.string "username") [node (Token.string "Khaleesi") []]],
-    node (Token.string "content") []]
+  node (Token.string "author") [
+    node (Token.string "username") [node (Token.string "Khaleesi") []]],
+  node (Token.string "content") []]
 
 #guard run'
   next

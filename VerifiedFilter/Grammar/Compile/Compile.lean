@@ -4,6 +4,8 @@ import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Regex.Memoize.Memoize
 
+open VerifiedFilter.Regex
+open Regex
 open Regex.Memoize
 
 -- Since we avoid smart constructors in all our other proofs, we add simplify here as an alternative.
@@ -20,8 +22,8 @@ partial def Regex.derivatives [DecidableEq σ] (r: Regex σ): List (Regex σ) :=
   then [r]
   else List.eraseDups (List.flatMap Regex.derivatives uniqueDerivatives)
 
-def Regex.compile [DecidableEq σ] [Hashable σ] [Monad m] [MemoizeKatydid m σ]
-  (r: Regex σ): m Unit := do
+def Regex.compile [DecidableEq σ] [Hashable σ] [Monad m]
+  [MemoizeKatydid m σ] (r: Regex σ): m Unit := do
   for r in Regex.derivatives r do
     _ ← MemoizeKatydid.enterM r
     for bools in Vector.boolCombos (symcount r) do

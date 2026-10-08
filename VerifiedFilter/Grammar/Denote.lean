@@ -494,5 +494,5 @@ theorem denote_nil_is_null (Φ: φ → α → Bool):
 end Grammar
 
 -- We specify the semantics of a Grammar as the denotation of the start rule.
-def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Bool) (h: Hedge α): Prop :=
-  Rule.denote G Φ G.start h
+def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Bool) (h: Hedge α)
+  : Prop := Rule.denote G Φ G.start h
