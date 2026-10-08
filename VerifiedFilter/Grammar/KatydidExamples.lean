@@ -280,26 +280,26 @@ namespace benchmarks
 def eq (v: α × Fin n) := symbol (Pred.eq v.1, v.2)
 def field (v: α × Fin n) := contains (symbol (Pred.eq v.1, v.2))
 
-def simple: Grammar 2 (Pred String) :=
+def compSci: Grammar 2 (Pred String) :=
   mk (field ("Category", 1)) #v[emptystr, eq ("Computer Science", 0)]
 
-#guard validate simple Pred.evalb
+#guard validate compSci Pred.evalb
   [node "Category" [node "Computer Science" []]]
 
-#guard validate simple Pred.evalb
+#guard validate compSci Pred.evalb
   [node "Name" [node "ITP" []], node "Category" [node "Computer Science" []]]
 
-#guard validate simple Pred.evalb
+#guard validate compSci Pred.evalb
   [node "Name" [node "ICFP" []], node "Category" [node "Functional Programming" []]]
   = false
 
-def complex: Grammar 7 (Pred String) :=
+def dateAndCont: Grammar 7 (Pred String) :=
   mk (interleave (eq ("Due", 1)) (interleave (eq ("Loc", 5)) starAny)) #v[emptystr,
     or (field ("Year", 2)) (and (field ("Year", 3)) (field ("Month", 4))),
     eq ("2026", 0), eq ("2025", 0), symbol (Pred.ge "10", 0),
     field ("Cont", 6), eq ("EU", 0)]
 
-#guard validate complex Pred.evalb
+#guard validate dateAndCont Pred.evalb
   [
     node "Name" [node "ITP" []],
     node "Loc" [
@@ -313,7 +313,7 @@ def complex: Grammar 7 (Pred String) :=
     ],
   ]
 
-#guard validate complex Pred.evalb
+#guard validate dateAndCont Pred.evalb
   [
     node "Name" [node "ITP" []],
     node "Loc" [
@@ -327,7 +327,7 @@ def complex: Grammar 7 (Pred String) :=
     ],
   ]
 
-#guard validate complex Pred.evalb
+#guard validate dateAndCont Pred.evalb
   [
     node "Name" [node "ITP" []],
     node "Loc" [
@@ -341,7 +341,7 @@ def complex: Grammar 7 (Pred String) :=
   ]
   = false
 
-#guard validate complex Pred.evalb
+#guard validate dateAndCont Pred.evalb
   [
     node "Name" [node "ITP" []],
     node "Loc" [
