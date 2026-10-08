@@ -6,8 +6,6 @@ import VerifiedFilter.Std.Float
 import VerifiedFilter.Parser.Token
 
 import TestSuiteLib.Regexp
-import Mathlib.Tactic.RewriteSearch
-import Aesop
 
 namespace TestSuiteLib
 

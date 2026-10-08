@@ -1,7 +1,3 @@
-import Mathlib.Tactic.RewriteSearch
-import Mathlib.Tactic
-import Aesop
-
 import TestSuiteLib.GoGrammar
 import TestSuiteLib.Pred
 import VerifiedFilter.Grammar
@@ -999,7 +995,7 @@ theorem max_cons
     simp only [List.max]
     rw [@List.foldl_cons]
     rw [List.foldl_max]
-    simp only [right_eq_sup]
+    simp_all
     omega
 
 theorem max_max {x: Nat} {xs: List Nat}:
@@ -1017,8 +1013,8 @@ theorem max_cons1
     simp only [List.max]
     rw [@List.foldl_cons]
     rw [List.foldl_max]
-    nth_rewrite 2 [List.max?.eq_def]
-    nth_rewrite 2 [Option.getD.eq_def]
+    rw [@List.max?.eq_def Nat _ (x'::xs)]
+    rw [@Option.getD.eq_def (dflt := 0)]
     simp only
     rw [max_max]
     simp only [List.max]
