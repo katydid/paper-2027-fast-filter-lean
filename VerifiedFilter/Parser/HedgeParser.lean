@@ -328,7 +328,7 @@ def exampleParse1 [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit :
 def exampleParse [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
   assert (← p.next) Hint.enter -- enter blogpost
   assert (← p.next) Hint.value; assert (← p.token) (string "author")
-  _ ← p.skip                     -- skip author's children, username, ...
+  _ ← p.skip                   -- skip author's children, username, ...
   assert (← p.next) Hint.value; assert (← p.token) (string "content")
   assert (← p.next) Hint.enter; assert (← p.next) Hint.leave
   assert (← p.next) Hint.leave -- leave blogpost

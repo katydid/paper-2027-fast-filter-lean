@@ -294,10 +294,11 @@ def compSci: Grammar 2 (Pred String) :=
   = false
 
 def dateAndCont: Grammar 7 (Pred String) :=
-  mk (interleave (eq ("Due", 1)) (interleave (eq ("Loc", 5)) starAny)) #v[emptystr,
-    or (field ("Year", 2)) (and (field ("Year", 3)) (field ("Month", 4))),
-    eq ("2026", 0), eq ("2025", 0), symbol (Pred.ge "10", 0),
-    field ("Cont", 6), eq ("EU", 0)]
+mk (interleave (eq ("Due", 1)) (interleave (eq ("Loc", 5)) starAny)) #v[
+  emptystr,
+  or (field ("Year", 2)) (and (field ("Year", 3)) (field ("Month", 4))),
+  eq ("2026", 0), eq ("2025", 0), symbol (Pred.ge "10", 0),
+  field ("Cont", 6), eq ("EU", 0)]
 
 #guard validate dateAndCont Pred.evalb
   [
