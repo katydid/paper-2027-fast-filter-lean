@@ -9,6 +9,7 @@ import VerifiedFilter.Regex.Lang
 import VerifiedFilter.Regex.Map
 import VerifiedFilter.Regex.Memoize
 import VerifiedFilter.Regex.Point
+import VerifiedFilter.Regex.Preds
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.RegexID
 import VerifiedFilter.Regex.Replace

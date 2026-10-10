@@ -10,15 +10,16 @@ import VerifiedFilter.Regex.ExtractReplace
 import VerifiedFilter.Regex.Lang
 import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Point
+import VerifiedFilter.Regex.Preds
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Replace
 
 namespace VerifiedFilter.Regex.Regex
 
 -- enter returns the symbols that were extracted from the regular expression.
-def enter (r: Regex σ): Vector σ |r| := (extract r).2
+def enter (r: Regex σ): Preds σ |r| := Preds.mk (extract r).2
 
-#guard enter (or (symbol 'a') (star (symbol 'b'))) = #v['a','b']
+#guard enter (or (symbol 'a') (star (symbol 'b'))) = Preds.mk #v['a','b']
 
 -- leave uses the symbol predicate results to calculate the derivative of the regular expression.
 def leave (r: Regex σ) (bools: Vector Bool |r|): Regex σ :=
@@ -29,14 +30,14 @@ def leave (r: Regex σ) (bools: Vector Bool |r|): Regex σ :=
 end Regex
 
 def Regex.Katydid.derive (Φ: σ → Bool) (r: Regex σ): Regex σ :=
-  enter r |> Vector.map Φ |> leave r
+  enter r |> Preds.eval Φ |> leave r
 
 def Regex.Katydid.validate (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): Bool :=
   null (List.foldl (fun dr x => Regex.Katydid.derive (flip Φ x) dr) r xs)
 
 theorem Regex.Katydid.derive_is_Regex_derive (Φ: σ → α → Bool) r a:
   Regex.Katydid.derive (flip Φ a) r = Regex.derive Φ r a := by
-  simp only [Katydid.derive, enter, leave, ← Vector.map_zip_is_zip_map, flip]
+  simp only [Katydid.derive, enter, leave, preds_eval_is_map, ← Vector.map_zip_is_zip_map, flip]
   rw [← Regex.extract_replace_is_map]
   rw [Regex.Point.regex_derive_is_point_derive]
 
@@ -50,6 +51,7 @@ theorem derive_unfolds_to_map (Φ: σ → α → Bool) (r: Regex σ) (a: α):
   unfold enter
   unfold flip
   simp
+  rw [preds_eval_is_map]
   rw [Vector.map_zip_is_zip_map]
 
 theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (a: α):

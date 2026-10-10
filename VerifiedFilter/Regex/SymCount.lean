@@ -24,5 +24,3 @@ instance: NumberOfSymbols (Regex σ) where
   numberOfSymbols := nsym
 
 #guard |or (symbol 'a') (star (symbol 'b'))| = 2
-
-def test (r: Regex σ): Vector σ |r| := sorry

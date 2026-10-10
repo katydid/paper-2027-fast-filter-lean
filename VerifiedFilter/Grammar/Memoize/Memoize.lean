@@ -8,6 +8,7 @@ import VerifiedFilter.Std.Vector
 import VerifiedFilter.Regex.Lang
 import VerifiedFilter.Regex.Katydid
 import VerifiedFilter.Regex.Memoize.Memoize
+import VerifiedFilter.Regex.Preds
 import VerifiedFilter.Grammar.Denote
 import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Grammar.Katydid
@@ -23,7 +24,7 @@ def Regex.Memoize.deriveM [DecidableEq σ] [Hashable σ] [Monad m] [MemoizeKatyd
   (Φ': σ → Bool) (Φ: (s: σ) → m { b // b = Φ' s }) (r: Regex σ):
   m {dr: Regex σ // dr = Regex.Katydid.derive Φ' r } := do
   let ⟨symbols, hsymbols⟩ ← MemoizeKatydid.enterM r
-  let bools ← Vector.mapMemoize Φ' Φ symbols
+  let bools ← Preds.evalMemoize Φ' Φ symbols
   let ⟨res, hres⟩ ← MemoizeKatydid.leaveM ⟨r, bools⟩
   let h: res = Regex.Katydid.derive Φ' r := by
     simp only at hres
