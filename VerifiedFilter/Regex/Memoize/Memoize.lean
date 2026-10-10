@@ -8,6 +8,7 @@ import VerifiedFilter.Std.Memoize.Memoize
 
 import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Regex
+import VerifiedFilter.Regex.Preds
 import VerifiedFilter.Regex.Katydid
 
 import VerifiedFilter.Regex.Memoize.Enter
@@ -16,7 +17,7 @@ import VerifiedFilter.Regex.Memoize.Leave
 namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydid (m: Type → Type u) σ where
-  enterM: (r: Regex σ) → m { res: Vector σ |r| // res = enter r }
+  enterM: (r: Regex σ) → m { res: Preds σ |r| // res = enter r }
   leaveM: (param: Σ (r: Regex σ), (Vector Bool |r|))
              → m { res: Regex σ // res = Regex.leave param.1 param.2 }
 
@@ -31,11 +32,13 @@ instance (m: Type → Type u) (σ: Type) [DecidableEq σ] [Hashable σ] [Monad m
 
 def derive [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydid m σ]
   (Φ: σ → Bool) (r: Regex σ): m {dr: Regex σ // dr = Regex.Katydid.derive Φ r } := do
-  let ⟨symbols, hsymbols⟩ ← MemoizeKatydid.enterM r
-  let ⟨res, hres⟩ ← MemoizeKatydid.leaveM ⟨r, Vector.map Φ symbols⟩
+  let ⟨preds, hpreds⟩ ← MemoizeKatydid.enterM r
+  let bools := Preds.eval Φ preds
+  let ⟨res, hres⟩ ← MemoizeKatydid.leaveM ⟨r, bools⟩
   let h: res = Regex.Katydid.derive Φ r := by
     simp only at hres
-    rw [hsymbols] at hres
+    subst bools
+    rw [hpreds] at hres
     assumption
   pure (Subtype.mk res h)
 
