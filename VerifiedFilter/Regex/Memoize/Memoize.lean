@@ -17,7 +17,7 @@ import VerifiedFilter.Regex.Memoize.Leave
 namespace VerifiedFilter.Regex.Regex.Memoize
 
 class MemoizeKatydid (m: Type → Type u) σ where
-  enterM: (r: Regex σ) → m { res: Preds σ |r| // res = enter r }
+  enterM: (r: Regex σ) → m { res: Preds σ Bool |r| // res = enter r }
   leaveM: (param: Σ (r: Regex σ), (Vector Bool |r|))
              → m { res: Regex σ // res = Regex.leave param.1 param.2 }
 

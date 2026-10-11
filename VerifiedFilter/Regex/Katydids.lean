@@ -3,6 +3,7 @@
 
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Point
+import VerifiedFilter.Regex.Preds
 import VerifiedFilter.Regex.Extracts
 import VerifiedFilter.Regex.Replaces
 
@@ -13,8 +14,8 @@ def Regex.Point.derives (rs: Vector (Regex (σ × Bool)) l): Vector (Regex σ) l
 
 namespace Regex
 
-def enters (rs: Vector (Regex σ) l): Vector σ |rs| :=
-  (Regex.extracts rs).2
+def enters (lookup: σ → Bool → β) (rs: Vector (Regex σ) l): Preds σ β |rs| :=
+  Preds.mk' (Regex.extracts rs).2 lookup
 
 def leaves (rs: Vector (Regex σ) l) (bools: Vector Bool |rs|): (Vector (Regex σ) l) :=
   let points: Vector (σ × Bool) |rs| := Vector.zip (Regex.extracts rs).2 bools
@@ -23,5 +24,5 @@ def leaves (rs: Vector (Regex σ) l) (bools: Vector Bool |rs|): (Vector (Regex �
 
 end Regex
 
-def Regex.Katydid.derives (Φ: σ → Bool) (r: Vector (Regex σ) l): Vector (Regex σ) l :=
-  enters r |> Vector.map Φ |> leaves r
+def Regex.Katydid.derives (Γ: σ → Bool → β) (ν: β → Bool) (Φ: σ → Bool) (r: Vector (Regex σ) l): Vector (Regex σ) l :=
+  enters Γ r |> Preds.eval Φ |> Vector.map ν |> leaves r

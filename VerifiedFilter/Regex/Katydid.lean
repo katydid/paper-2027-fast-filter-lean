@@ -17,7 +17,7 @@ import VerifiedFilter.Regex.Replace
 namespace VerifiedFilter.Regex.Regex
 
 -- enter returns the symbols that were extracted from the regular expression.
-def enter (r: Regex σ): Preds σ |r| := Preds.mk (extract r).2
+def enter (r: Regex σ): Preds σ Bool |r| := Preds.mk (extract r).2
 
 #guard enter (or (symbol 'a') (star (symbol 'b'))) = Preds.mk #v['a','b']
 
